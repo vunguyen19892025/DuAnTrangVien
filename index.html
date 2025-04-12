@@ -3,265 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bảng Tiến Độ Thi Công - Dự Án Trang Viên Dầu Tiếng</title>
+    <title>Bảng Tiến Độ Thi Công Dự Án Trang Viên - Dầu Tiếng</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8fafc;
         }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .input-field {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            background-color: white;
+        }
+        
+        .btn {
+            padding: 9px 16px;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
         .gantt-container {
             overflow-x: auto;
-            margin-top: 20px;
-            position: relative;
+            margin-bottom: 30px;
         }
-        .gantt-row {
-            height: 30px;
+        
+        .zoom-controls {
             display: flex;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            position: relative;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .gantt-header {
-            font-weight: bold;
-            background-color: #f0f0f0;
-        }
-        .gantt-task {
-            position: absolute;
-            height: 20px;
-            border-radius: 3px;
-            color: white;
+        
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 1;
-        }
-        .gantt-scale {
-            position: relative;
-            height: 30px;
-        }
-        .gantt-scale-marker {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background-color: #ddd;
-        }
-        .gantt-scale-text {
-            position: absolute;
-            font-size: 12px;
-            top: 5px;
-        }
-        .gantt-milestone {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 16px solid red;
-            z-index: 2;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            background-color: white;
+            font-size: 1.25rem;
             cursor: pointer;
         }
-        .tooltip {
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            z-index: 1000;
-            display: none;
-        }
-        .task-type-1 { background-color: #3498db; } /* Giải phóng mặt bằng */
-        .task-type-2 { background-color: #2ecc71; } /* Gia cố nền & Móng */
-        .task-type-3 { background-color: #e67e22; } /* Công trình nhà chính */
-        .task-type-4 { background-color: #9b59b6; } /* Công trình phụ */
-        .task-type-5 { background-color: #1abc9c; } /* Sân vườn & Hạ tầng */
-        .task-type-6 { background-color: #e74c3c; } /* Hoàn thiện */
         
-        input[type="date"], input[type="number"], input[type="text"] {
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-            border-radius: 4px;
+        .zoom-btn:hover {
+            background-color: #f1f5f9;
         }
-        button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .zoom-controls {
-            margin: 10px 0;
-        }
-        .zoom-controls button {
-            font-size: 18px;
-            width: 40px;
-            height: 40px;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
+        
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
         }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
             text-align: left;
         }
-        table th {
-            background-color: #f2f2f2;
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 500;
         }
-        .payment-row {
-            background-color: #f9f9f9;
+        
+        tr:nth-child(even) {
+            background-color: #f8fafc;
         }
-        .format-number {
-            text-align: right;
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
         }
-        @media print {
-            body {
-                width: 100%;
-                margin: 0;
-                padding: 0;
+        
+        .log-container {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            font-size: 0.875rem;
+        }
+        
+        .log-entry.error {
+            color: #dc2626;
+        }
+        
+        .log-entry.warning {
+            color: #d97706;
+        }
+        
+        .log-entry.info {
+            color: #2563eb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Custom styling for payment phases */
+        .payment-phase {
+            font-weight: 500;
+            color: #1e40af;
+        }
+        
+        /* Task color coding */
+        .task-preparation {
+            background-color: #93c5fd;
+        }
+        
+        .task-foundation {
+            background-color: #86efac;
+        }
+        
+        .task-main-building {
+            background-color: #fdba74;
+        }
+        
+        .task-secondary {
+            background-color: #c4b5fd;
+        }
+        
+        .task-landscape {
+            background-color: #67e8f9;
+        }
+        
+        .task-finishing {
+            background-color: #f9a8d4;
+        }
+        
+        .color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
             }
-            .no-print {
-                display: none;
-            }
-            .gantt-container {
-                overflow: visible;
+            
+            .table-container {
+                font-size: 0.875rem;
             }
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="max-w-full mx-auto">
-        <h1 class="text-3xl font-bold text-center my-4">BẢNG TIẾN ĐỘ THI CÔNG DỰ ÁN TRANG VIÊN - DẦU TIẾNG</h1>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="text-3xl font-bold mb-2">Bảng Tiến Độ Thi Công Dự Án Trang Viên - Dầu Tiếng</h1>
+            <p class="text-gray-600">Đơn vị thi công: CÔNG TY TNHH NÉT VIỆT</p>
+        </div>
         
-        <div class="bg-white p-4 rounded shadow-md mb-6">
-            <h2 class="text-xl font-bold mb-4">Thông tin dự án</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                    <p><strong>Chủ đầu tư:</strong> ANH HƯNG</p>
+        <div class="section">
+            <h2 class="section-title">Thông tin dự án</h2>
+            <div class="input-group">
+                <div class="input-container">
+                    <label class="input-label">Chủ đầu tư:</label>
+                    <div class="input-field bg-gray-100">ANH HƯNG</div>
                 </div>
-                <div>
-                    <p><strong>Địa điểm:</strong> DẦU TIẾNG</p>
+                <div class="input-container">
+                    <label class="input-label">Địa điểm:</label>
+                    <div class="input-field bg-gray-100">DẦU TIẾNG</div>
                 </div>
-                <div>
-                    <p><strong>Đơn vị thi công:</strong> CÔNG TY TNHH NÉT VIỆT</p>
+                <div class="input-container">
+                    <label class="input-label">Giá trị hợp đồng (VNĐ):</label>
+                    <input type="text" id="contractValue" class="input-field" value="16325600000">
                 </div>
+                <div class="input-container">
+                    <label class="input-label">Ngày bắt đầu thi công:</label>
+                    <input type="date" id="startDate" class="input-field" value="2025-05-05">
+                </div>
+                <div class="input-container">
+                    <label class="input-label">Tổng thời gian thi công (ngày):</label>
+                    <input type="number" id="totalDuration" class="input-field" value="250" min="100" max="500">
+                </div>
+                <button id="updateBtn" class="btn btn-primary">Cập nhật</button>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 no-print">
-                <div>
-                    <label class="block mb-2">Giá trị hợp đồng (VNĐ):</label>
-                    <input type="text" id="contractValue" value="16,325,800,000" class="w-full">
-                </div>
-                <div>
-                    <label class="block mb-2">Ngày bắt đầu thi công chính thức:</label>
-                    <input type="date" id="startDate" value="2025-05-05" class="w-full">
-                </div>
-                <div>
-                    <label class="block mb-2">Tổng thời gian thi công (ngày):</label>
-                    <input type="number" id="totalDuration" value="250" min="1" class="w-full">
-                </div>
+            <div id="prepInfo" class="text-sm text-gray-600 mt-3">
+                Giai đoạn chuẩn bị bắt đầu từ <span id="prepStartDate">15/04/2025</span> (20 ngày trước khi thi công chính thức)
             </div>
-            
-            <div class="mt-4 no-print">
-                <button id="updateButton" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                    Cập nhật tiến độ
-                </button>
-            </div>
-            
-            <div class="mt-4" id="projectInfo">
-                <p><strong>Giai đoạn chuẩn bị:</strong> Bắt đầu 20 ngày trước ngày khởi công chính thức</p>
-                <p><strong>Đợt thanh toán 1 (50%):</strong> Vào ngày bắt đầu thi công chính thức</p>
+            <div id="logContainer" class="log-container hidden">
+                <!-- Log entries will be added here -->
             </div>
         </div>
         
-        <div class="bg-white p-4 rounded shadow-md mb-6">
-            <h2 class="text-xl font-bold mb-4">Bảng đợt thanh toán</h2>
+        <div class="section">
+            <h2 class="section-title">Biểu đồ Gantt tiến độ thi công</h2>
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomOut">-</button>
+                <button class="zoom-btn" id="zoomIn">+</button>
+                <button class="zoom-btn" id="zoomFit">⟳</button>
+            </div>
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="legend-color task-preparation"></div>
+                    <span>Giai đoạn chuẩn bị</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-foundation"></div>
+                    <span>Gia cố nền & Móng</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-main-building"></div>
+                    <span>Công trình nhà chính</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-secondary"></div>
+                    <span>Công trình phụ</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-landscape"></div>
+                    <span>Sân vườn & Hạ tầng</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color task-finishing"></div>
+                    <span>Hoàn thiện</span>
+                </div>
+            </div>
+            <div id="ganttChart" class="gantt-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Bảng chi tiết tiến độ thi công</h2>
             <div class="table-container">
-                <table id="paymentTable">
-                    <thead>
-                        <tr>
-                            <th>Đợt</th>
-                            <th>Giai đoạn thanh toán</th>
-                            <th>Tỷ lệ (%)</th>
-                            <th>Giá trị (VNĐ)</th>
-                            <th>Thời gian</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="bg-white p-4 rounded shadow-md mb-6">
-            <h2 class="text-xl font-bold mb-4">Biểu đồ Gantt tiến độ thi công</h2>
-            
-            <div class="zoom-controls no-print">
-                <button id="zoomIn" title="Phóng to"><i class="fas fa-plus"></i></button>
-                <button id="zoomOut" title="Thu nhỏ"><i class="fas fa-minus"></i></button>
-                <button id="zoomReset" title="Khung nhìn đầy đủ"><i class="fas fa-expand"></i></button>
-            </div>
-            
-            <div class="gantt-container" id="ganttChart">
-                <!-- Biểu đồ Gantt sẽ được tạo bằng JavaScript -->
-            </div>
-            
-            <div class="mt-4">
-                <h3 class="font-bold">Chú thích màu sắc:</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mt-2">
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-1"></div>
-                        <span>Giải phóng mặt bằng</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-2"></div>
-                        <span>Gia cố nền &amp; Móng</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-3"></div>
-                        <span>Công trình nhà chính</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-4"></div>
-                        <span>Công trình phụ</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-5"></div>
-                        <span>Sân vườn &amp; Hạ tầng</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-4 h-4 mr-2 task-type-6"></div>
-                        <span>Hoàn thiện</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white p-4 rounded shadow-md">
-            <h2 class="text-xl font-bold mb-4">Bảng chi tiết tiến độ thi công</h2>
-            <div class="table-container">
-                <table id="taskTable">
+                <table id="scheduleTable">
                     <thead>
                         <tr>
                             <th>STT</th>
                             <th>Hạng mục công việc</th>
-                            <th>Loại công việc</th>
                             <th>Thời gian bắt đầu</th>
                             <th>Thời gian hoàn thành</th>
                             <th>Số ngày</th>
@@ -269,488 +334,656 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                        <!-- Schedule data will be added here -->
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <div class="mt-6 text-center text-sm text-gray-600">
-            <p>Báo cáo được tạo ngày: <span id="reportDate"></span></p>
+        <div class="section">
+            <h2 class="section-title">Bảng đợt thanh toán</h2>
+            <div class="table-container">
+                <table id="paymentTable">
+                    <thead>
+                        <tr>
+                            <th>Đợt</th>
+                            <th>Giai đoạn</th>
+                            <th>Tỷ lệ</th>
+                            <th>Giá trị (VNĐ)</th>
+                            <th>Thời gian dự kiến</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Payment data will be added here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <div class="tooltip" id="tooltip"></div>
-    
+
     <script>
-        // Định nghĩa dữ liệu các hạng mục công việc
-        const taskData = [
-            {id: 1, name: "GIAI ĐOẠN CHUẨN BỊ", type: 1, duration: 20, dependsOn: null, note: "Trước khi thi công chính thức", percentage: 0},
-            {id: 2, name: "Trắc đạc, định vị công trình", type: 1, duration: 5, dependsOn: 1, note: "Hạng mục 109", percentage: 0},
-            {id: 3, name: "Tổ chức công trường, làm lán trại", type: 1, duration: 8, dependsOn: 1, note: "Điều 3.1", percentage: 0},
-            {id: 4, name: "Phá dỡ công trình hiện trạng", type: 1, duration: 10, dependsOn: 2, note: "Hạng mục 131", percentage: 0},
-            {id: 5, name: "Xây tường rào bảo vệ công trình", type: 1, duration: 10, dependsOn: 4, note: "Điều 3.3", percentage: 0},
-            
-            {id: 6, name: "THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG", type: 2, duration: 40, dependsOn: 1, note: "", percentage: 0},
-            {id: 7, name: "Đào đắp đất tổng thể", type: 2, duration: 15, dependsOn: 6, note: "Hạng mục 110", percentage: 0},
-            {id: 8, name: "Ép cọc BTCT 250x250", type: 2, duration: 15, dependsOn: 7, note: "Hạng mục A", percentage: 0},
-            {id: 9, name: "Khoan giếng ngầm", type: 2, duration: 5, dependsOn: 8, note: "Hạng mục 125", percentage: 0},
-            {id: 10, name: "Đào hố thấm tự nhiên", type: 2, duration: 5, dependsOn: 9, note: "Hạng mục 127", percentage: 0},
-            
-            {id: 11, name: "THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ", type: 2, duration: 50, dependsOn: 10, note: "", percentage: 0},
-            {id: 12, name: "Thi công phần móng nhà từ đường", type: 2, duration: 30, dependsOn: 11, note: "Hạng mục 13", percentage: 0},
-            {id: 13, name: "Thi công nâng cao khối đế lên 0.8m", type: 2, duration: 20, dependsOn: 12, note: "Hạng mục 14", percentage: 0},
-            
-            {id: 14, name: "THI CÔNG MÓNG CÔNG TRÌNH PHỤ", type: 4, duration: 30, dependsOn: 10, note: "", percentage: 0},
-            {id: 15, name: "Móng cổng tam quan", type: 4, duration: 10, dependsOn: 14, note: "Hạng mục 4", percentage: 0},
-            {id: 16, name: "Móng chòi vọng cảnh", type: 4, duration: 10, dependsOn: 15, note: "Hạng mục 95", percentage: 0},
-            {id: 17, name: "Đào hồ Koi và xử lý nền", type: 4, duration: 10, dependsOn: 16, note: "Hạng mục 100", percentage: 0},
-            
-            {id: 18, name: "THI CÔNG TƯỜNG RÀO & NÂNG NỀN", type: 2, duration: 30, dependsOn: 13, note: "", percentage: 0},
-            {id: 19, name: "Xây tường bó để nâng nền toàn khối", type: 2, duration: 10, dependsOn: 18, note: "Hạng mục 1", percentage: 0},
-            {id: 20, name: "Thi công tường rào thường", type: 2, duration: 15, dependsOn: 19, note: "Hạng mục 2", percentage: 0},
-            {id: 21, name: "Thi công tường rào có hoa văn phù điêu", type: 2, duration: 5, dependsOn: 20, note: "Hạng mục 3", percentage: 0},
-            
-            {id: 22, name: "THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)", type: 3, duration: 70, dependsOn: 13, note: "Đợt thanh toán 2: 25%", percentage: 25},
-            {id: 23, name: "Thi công tầng trệt nhà chính", type: 3, duration: 30, dependsOn: 22, note: "Hạng mục 15", percentage: 0},
-            {id: 24, name: "Thi công mái công trình", type: 3, duration: 30, dependsOn: 23, note: "Hạng mục 16", percentage: 0},
-            {id: 25, name: "Thi công phù điêu đỉnh, diềm mái", type: 3, duration: 15, dependsOn: 24, note: "Hạng mục 17", percentage: 0},
-            {id: 26, name: "Lắp đặt cuốn thư đá", type: 3, duration: 10, dependsOn: 24, note: "Hạng mục 18", percentage: 0},
-            
-            {id: 27, name: "THI CÔNG CỔNG TAM QUAN", type: 4, duration: 40, dependsOn: 21, note: "", percentage: 0},
-            {id: 28, name: "Thi công phần thân cổng", type: 4, duration: 15, dependsOn: 27, note: "Hạng mục 5", percentage: 0},
-            {id: 29, name: "Thi công phần mái cổng", type: 4, duration: 15, dependsOn: 28, note: "Hạng mục 6-7", percentage: 0},
-            {id: 30, name: "Lắp đặt bộ cửa cổng chính và phụ", type: 4, duration: 10, dependsOn: 29, note: "Hạng mục 8-9", percentage: 0},
-            
-            {id: 31, name: "THI CÔNG CÔNG TRÌNH PHỤ", type: 4, duration: 60, dependsOn: 21, note: "Đợt thanh toán 3: 10%", percentage: 10},
-            {id: 32, name: "Thi công thân và mái nhà chòi vọng cảnh", type: 4, duration: 30, dependsOn: 31, note: "Hạng mục 96-97", percentage: 0},
-            {id: 33, name: "Thi công hồ Koi", type: 4, duration: 40, dependsOn: 31, note: "Hạng mục 100", percentage: 0},
-            {id: 34, name: "Thi công khu nghĩa trang", type: 4, duration: 30, dependsOn: 31, note: "Hạng mục 103-108", percentage: 0},
-            {id: 35, name: "Xây nhà kho và bồn nước", type: 4, duration: 20, dependsOn: 33, note: "Hạng mục 123", percentage: 0},
-            
-            {id: 36, name: "THI CÔNG HẠ TẦNG TỔNG THỂ", type: 5, duration: 30, dependsOn: 26, note: "", percentage: 0},
-            {id: 37, name: "Thi công bê tông nền cảnh quan và đường dạo", type: 5, duration: 15, dependsOn: 36, note: "Hạng mục 111", percentage: 0},
-            {id: 38, name: "Xây bó vỉa và hoàn thiện nền đá", type: 5, duration: 10, dependsOn: 37, note: "Hạng mục 112-113-117", percentage: 0},
-            {id: 39, name: "Lắp đặt hệ thống thoát nước và tưới tự động", type: 5, duration: 15, dependsOn: 37, note: "Hạng mục 116", percentage: 0},
-            
-            {id: 40, name: "HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)", type: 6, duration: 60, dependsOn: 26, note: "Đợt thanh toán 4: 5%", percentage: 5},
-            {id: 41, name: "Thi công ốp lát gạch", type: 6, duration: 20, dependsOn: 40, note: "Hạng mục 20-24", percentage: 0},
-            {id: 42, name: "Thi công ốp đá và lan can", type: 6, duration: 30, dependsOn: 40, note: "Hạng mục 25-26", percentage: 0},
-            {id: 43, name: "Lắp đặt hệ thống điện và nước âm tường", type: 6, duration: 20, dependsOn: 40, note: "Hạng mục 19", percentage: 0},
-            {id: 44, name: "Lắp đặt cửa gỗ", type: 6, duration: 15, dependsOn: 41, note: "Hạng mục 31-39", percentage: 0},
-            {id: 45, name: "Sơn nước trong và ngoài nhà", type: 6, duration: 20, dependsOn: 41, note: "Hạng mục 28-29-30", percentage: 0},
-            {id: 46, name: "Lắp đặt thiết bị vệ sinh", type: 6, duration: 10, dependsOn: 44, note: "Hạng mục 40-44", percentage: 0},
-            {id: 47, name: "Lắp đặt thiết bị điện và chiếu sáng", type: 6, duration: 15, dependsOn: 44, note: "Hạng mục 74-93", percentage: 0},
-            {id: 48, name: "Xử lý phòng chống mối", type: 6, duration: 5, dependsOn: 46, note: "Hạng mục 129", percentage: 0},
-            
-            {id: 49, name: "THI CÔNG NỘI THẤT", type: 6, duration: 30, dependsOn: 48, note: "Đợt thanh toán 5: 4%", percentage: 4},
-            {id: 50, name: "Thi công trần trang trí hoa văn", type: 6, duration: 10, dependsOn: 49, note: "Hạng mục 55", percentage: 0},
-            {id: 51, name: "Lắp đặt vách ốp tường sau bàn thờ", type: 6, duration: 10, dependsOn: 49, note: "Hạng mục 49", percentage: 0},
-            {id: 52, name: "Lắp đặt bàn thờ và nội thất phòng thờ", type: 6, duration: 10, dependsOn: 50, note: "Hạng mục 50-54", percentage: 0},
-            {id: 53, name: "Lắp đặt tủ bếp và nội thất phòng bếp", type: 6, duration: 10, dependsOn: 50, note: "Hạng mục 56-61", percentage: 0},
-            {id: 54, name: "Lắp đặt nội thất phòng ngủ", type: 6, duration: 10, dependsOn: 52, note: "Hạng mục 62-72", percentage: 0},
-            
-            {id: 55, name: "HOÀN THIỆN CẢNH QUAN", type: 5, duration: 45, dependsOn: 39, note: "", percentage: 0},
-            {id: 56, name: "Thi công tiểu cảnh non bộ", type: 5, duration: 15, dependsOn: 55, note: "Hạng mục 101", percentage: 0},
-            {id: 57, name: "Thi công cầu vượt hồ koi", type: 5, duration: 10, dependsOn: 56, note: "Hạng mục 102", percentage: 0},
-            {id: 58, name: "Trồng thảm cỏ nhung Nhật", type: 5, duration: 10, dependsOn: 57, note: "Hạng mục 106-115", percentage: 0},
-            {id: 59, name: "Lắp đặt hệ thống đèn sân vườn", type: 5, duration: 15, dependsOn: 57, note: "Hạng mục 118-121", percentage: 0},
-            {id: 60, name: "Hoàn thiện trồng cây tiểu cảnh", type: 5, duration: 10, dependsOn: 58, note: "Ngoài hợp đồng", percentage: 0},
-            
-            {id: 61, name: "HOÀN THIỆN VÀ BÀN GIAO", type: 6, duration: 20, dependsOn: 54, note: "Đợt thanh toán 6: 3%", percentage: 3},
-            {id: 62, name: "Hoàn thiện nhà chòi vọng cảnh", type: 6, duration: 5, dependsOn: 61, note: "Hạng mục 98-99", percentage: 0},
-            {id: 63, name: "Vệ sinh công nghiệp toàn công trình", type: 6, duration: 10, dependsOn: 62, note: "Hạng mục 130", percentage: 0},
-            {id: 64, name: "Nghiệm thu và bàn giao", type: 6, duration: 5, dependsOn: 63, note: "", percentage: 0},
-            {id: 65, name: "Bảo hành", type: 6, duration: 365, dependsOn: 64, note: "Đợt thanh toán 7: 3%", percentage: 3}
+        // Use Luxon for date handling
+        const DateTime = luxon.DateTime;
+        
+        // Initial data
+        const DEFAULT_START_DATE = "2025-05-05";
+        const DEFAULT_TOTAL_DURATION = 250;
+        const DEFAULT_CONTRACT_VALUE = 12888800000;
+        const PREP_DURATION = 20; // days before main construction
+        
+        // Task categories with default durations (percentages of total duration)
+        const taskCategories = [
+            { name: "Giai đoạn chuẩn bị", duration: PREP_DURATION, fixed: true, category: "preparation" },
+            { name: "Thi công gia cố nền đất yếu & móng", duration: 0.16, category: "foundation" }, // 16% of total duration
+            { name: "Thi công phần móng nhà từ đường & nâng đế", duration: 0.2, category: "foundation" }, // 20% of total duration
+            { name: "Thi công móng công trình phụ", duration: 0.12, category: "foundation" }, // 12% of total duration
+            { name: "Thi công tường rào & nâng nền", duration: 0.12, category: "main-building" }, // 12% of total duration
+            { name: "Thi công nhà từ đường (nhà chính)", duration: 0.28, category: "main-building" }, // 28% of total duration
+            { name: "Thi công cổng tam quan", duration: 0.16, category: "main-building" }, // 16% of total duration
+            { name: "Thi công công trình phụ", duration: 0.24, category: "secondary" }, // 24% of total duration
+            { name: "Thi công hạ tầng tổng thể", duration: 0.12, category: "landscape" }, // 12% of total duration
+            { name: "Hoàn thiện nhà từ đường", duration: 0.24, category: "finishing" }, // 24% of total duration
+            { name: "Thi công nội thất", duration: 0.12, category: "finishing" }, // 12% of total duration
+            { name: "Hoàn thiện cảnh quan", duration: 0.18, category: "landscape" }, // 18% of total duration
+            { name: "Hoàn thiện và bàn giao", duration: 0.08, category: "finishing" }, // 8% of total duration
         ];
         
-        // Định nghĩa dữ liệu các đợt thanh toán
-        const paymentData = [
-            {id: 1, name: "Ký hợp đồng", percentage: 50, milestone: true, taskId: 6},
-            {id: 2, name: "Hoàn thành mái ngói (cất nóc nhà thờ chính, cổng tam quan)", percentage: 25, milestone: true, taskId: 22},
-            {id: 3, name: "Xây tô đạt 80%", percentage: 10, milestone: true, taskId: 31},
-            {id: 4, name: "Bả bột 2 lớp đạt 80%, hoàn thiện ốp lát", percentage: 5, milestone: true, taskId: 40},
-            {id: 5, name: "Lắp đặt đồ gỗ nội thất", percentage: 4, milestone: true, taskId: 49},
-            {id: 6, name: "Nghiệm thu + bàn giao", percentage: 3, milestone: true, taskId: 61},
-            {id: 7, name: "Bảo hành, sau 01 năm", percentage: 3, milestone: true, taskId: 65}
+        // Detailed tasks (subtasks)
+        const detailedTasks = [
+            { parent: 0, name: "Trắc đạc, định vị công trình", duration: 0.25, startOffset: 0 },
+            { parent: 0, name: "Tổ chức công trường, làm lán trại", duration: 0.4, startOffset: 0 },
+            { parent: 0, name: "Phá dỡ công trình hiện trạng", duration: 0.5, startOffset: 0.25 },
+            { parent: 0, name: "Xây tường rào bảo vệ công trình", duration: 0.5, startOffset: 0.5 },
+            
+            { parent: 1, name: "Đào đắp đất tổng thể", duration: 0.375, startOffset: 0 },
+            { parent: 1, name: "Ép cọc BTCT 250x250", duration: 0.375, startOffset: 0.375 },
+            { parent: 1, name: "Khoan giếng ngầm", duration: 0.125, startOffset: 0.75 },
+            { parent: 1, name: "Đào hố thấm tự nhiên", duration: 0.125, startOffset: 0.875 },
+            
+            { parent: 2, name: "Thi công phần móng nhà từ đường", duration: 0.6, startOffset: 0 },
+            { parent: 2, name: "Thi công nâng cao khối đế lên 0.8m", duration: 0.4, startOffset: 0.6 },
+            
+            { parent: 3, name: "Móng cổng tam quan", duration: 0.33, startOffset: 0 },
+            { parent: 3, name: "Móng chòi vọng cảnh", duration: 0.33, startOffset: 0.33 },
+            { parent: 3, name: "Đào hồ Koi và xử lý nền", duration: 0.34, startOffset: 0.66 },
+            
+            { parent: 4, name: "Xây tường bó để nâng nền toàn khối", duration: 0.33, startOffset: 0 },
+            { parent: 4, name: "Thi công tường rào thường", duration: 0.5, startOffset: 0.33 },
+            { parent: 4, name: "Thi công tường rào có hoa văn phù điêu", duration: 0.17, startOffset: 0.83 },
+            
+            { parent: 5, name: "Thi công tầng trệt nhà chính", duration: 0.43, startOffset: 0 },
+            { parent: 5, name: "Thi công mái công trình", duration: 0.43, startOffset: 0.43 },
+            { parent: 5, name: "Thi công phù điêu đỉnh, diềm mái", duration: 0.21, startOffset: 0.79 },
+            { parent: 5, name: "Lắp đặt cuốn thư đá", duration: 0.14, startOffset: 0.86 },
+            
+            { parent: 6, name: "Thi công phần thân cổng", duration: 0.375, startOffset: 0 },
+            { parent: 6, name: "Thi công phần mái cổng", duration: 0.375, startOffset: 0.375 },
+            { parent: 6, name: "Lắp đặt bộ cửa cổng chính và phụ", duration: 0.25, startOffset: 0.75 },
+            
+            { parent: 7, name: "Thi công thân và mái nhà chòi vọng cảnh", duration: 0.5, startOffset: 0 },
+            { parent: 7, name: "Thi công hồ Koi", duration: 0.67, startOffset: 0 },
+            { parent: 7, name: "Thi công khu nghĩa trang", duration: 0.5, startOffset: 0.17 },
+            { parent: 7, name: "Xây nhà kho và bồn nước", duration: 0.33, startOffset: 0.67 },
+            
+            { parent: 8, name: "Thi công bê tông nền cảnh quan và đường dạo", duration: 0.5, startOffset: 0 },
+            { parent: 8, name: "Xây bó vỉa và hoàn thiện nền đá", duration: 0.33, startOffset: 0.5 },
+            { parent: 8, name: "Lắp đặt hệ thống thoát nước và tưới tự động", duration: 0.5, startOffset: 0.5 },
+            
+            { parent: 9, name: "Thi công ốp lát gạch", duration: 0.33, startOffset: 0 },
+            { parent: 9, name: "Thi công ốp đá và lan can", duration: 0.5, startOffset: 0 },
+            { parent: 9, name: "Lắp đặt hệ thống điện và nước âm tường", duration: 0.33, startOffset: 0 },
+            { parent: 9, name: "Lắp đặt cửa gỗ", duration: 0.25, startOffset: 0.33 },
+            { parent: 9, name: "Sơn nước trong và ngoài nhà", duration: 0.33, startOffset: 0.33 },
+            { parent: 9, name: "Lắp đặt thiết bị vệ sinh", duration: 0.17, startOffset: 0.58 },
+            { parent: 9, name: "Lắp đặt thiết bị điện và chiếu sáng", duration: 0.25, startOffset: 0.58 },
+            { parent: 9, name: "Xử lý phòng chống mối", duration: 0.08, startOffset: 0.75 },
+            
+            { parent: 10, name: "Thi công trần trang trí hoa văn", duration: 0.33, startOffset: 0 },
+            { parent: 10, name: "Lắp đặt vách ốp tường sau bàn thờ", duration: 0.33, startOffset: 0 },
+            { parent: 10, name: "Lắp đặt bàn thờ và nội thất phòng thờ", duration: 0.33, startOffset: 0.33 },
+            { parent: 10, name: "Lắp đặt tủ bếp và nội thất phòng bếp", duration: 0.33, startOffset: 0.33 },
+            { parent: 10, name: "Lắp đặt nội thất phòng ngủ", duration: 0.34, startOffset: 0.66 },
+            
+            { parent: 11, name: "Thi công tiểu cảnh non bộ", duration: 0.33, startOffset: 0 },
+            { parent: 11, name: "Thi công cầu vượt hồ koi", duration: 0.22, startOffset: 0.33 },
+            { parent: 11, name: "Trồng thảm cỏ nhung Nhật", duration: 0.22, startOffset: 0.55 },
+            { parent: 11, name: "Lắp đặt hệ thống đèn sân vườn", duration: 0.33, startOffset: 0.55 },
+            { parent: 11, name: "Hoàn thiện trồng cây tiểu cảnh", duration: 0.22, startOffset: 0.78 },
+            
+            { parent: 12, name: "Hoàn thiện nhà chòi vọng cảnh", duration: 0.25, startOffset: 0 },
+            { parent: 12, name: "Vệ sinh công nghiệp toàn công trình", duration: 0.5, startOffset: 0.25 },
+            { parent: 12, name: "Nghiệm thu và bàn giao", duration: 0.25, startOffset: 0.75 },
         ];
         
-        // Khởi tạo các biến
-        let contractValue = 12888800000;
-        let startDate = new Date("2025-05-05");
-        let totalDuration = 250;
-        let dayWidth = 2; // Độ rộng mặc định cho mỗi ngày trên biểu đồ Gantt
-        let ganttWidth = totalDuration * dayWidth;
-        let tasks = [];
-        let currentScale = 1;
+        // Payment phases
+        const paymentPhases = [
+            { phase: "Ký hợp đồng", percentage: 50, milestone: "start" },
+            { phase: "Hoàn thành mái ngói (cất nóc)", percentage: 25, milestone: "roof" },
+            { phase: "Xây tô đạt 80%", percentage: 10, milestone: "masonry" },
+            { phase: "Bả bột 2 lớp đạt 80%, hoàn thiện ốp lát", percentage: 5, milestone: "finishing" },
+            { phase: "Lắp đặt đồ gỗ nội thất", percentage: 4, milestone: "furniture" },
+            { phase: "Nghiệm thu + bàn giao", percentage: 3, milestone: "completion" },
+            { phase: "Bảo hành, sau 01 năm", percentage: 3, milestone: "warranty" }
+        ];
         
-        // Hàm định dạng số
-        function formatNumber(number) {
-            return new Intl.NumberFormat('vi-VN').format(number);
-        }
+        // Get DOM elements
+        const contractValueInput = document.getElementById('contractValue');
+        const startDateInput = document.getElementById('startDate');
+        const totalDurationInput = document.getElementById('totalDuration');
+        const updateBtn = document.getElementById('updateBtn');
+        const prepStartDateElem = document.getElementById('prepStartDate');
+        const logContainer = document.getElementById('logContainer');
+        const ganttChartElem = document.getElementById('ganttChart');
+        const scheduleTableBody = document.getElementById('scheduleTable').querySelector('tbody');
+        const paymentTableBody = document.getElementById('paymentTable').querySelector('tbody');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const zoomFitBtn = document.getElementById('zoomFit');
         
-        // Hàm định dạng ngày
-        function formatDate(date) {
-            return new Date(date).toLocaleDateString('vi-VN');
-        }
+        // Variables to store current data
+        let currentStartDate;
+        let currentTotalDuration;
+        let currentContractValue;
+        let currentPrepStartDate;
+        let currentTasks = [];
+        let currentSubtasks = [];
+        let currentPayments = [];
+        let zoomLevel = 1;
+        let ganttChart;
         
-        // Hàm tính ngày kết thúc dựa trên ngày bắt đầu và số ngày
-        function calculateEndDate(startDate, days) {
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + days - 1);
-            return endDate;
-        }
-        
-        // Hàm tạo lại danh sách các công việc với thời gian được cập nhật
-        function recreateTasks() {
-            tasks = [];
+        // Initialize data and charts
+        function init() {
+            // Set initial values
+            currentStartDate = startDateInput.value;
+            currentTotalDuration = parseInt(totalDurationInput.value);
+            currentContractValue = parseFloat(contractValueInput.value);
             
-            // Giai đoạn chuẩn bị bắt đầu 20 ngày trước ngày khởi công chính thức
-            const prepStartDate = new Date(startDate);
-            prepStartDate.setDate(prepStartDate.getDate() - 20);
+            // Calculate preparation start date
+            calcPrepStartDate();
             
-            // Tạo lại các công việc với thời lượng được điều chỉnh theo tỷ lệ
-            for (let i = 0; i < taskData.length; i++) {
-                const taskInfo = taskData[i];
-                const task = { ...taskInfo };
+            // Calculate all dates and durations
+            calculateSchedule();
+            
+            // Calculate payment values and dates
+            calculatePayments();
+            
+            // Render the schedule table
+            renderScheduleTable();
+            
+            // Render the payment table
+            renderPaymentTable();
+            
+            // Initialize Gantt chart
+            initGanttChart();
+        }
+        
+        // Calculate the preparation start date
+        function calcPrepStartDate() {
+            let startDate = DateTime.fromISO(currentStartDate);
+            currentPrepStartDate = startDate.minus({ days: PREP_DURATION }).toFormat('dd/MM/yyyy');
+            prepStartDateElem.textContent = currentPrepStartDate;
+        }
+        
+        // Calculate all task dates and durations
+        function calculateSchedule() {
+            currentTasks = [];
+            currentSubtasks = [];
+            
+            let startDate = DateTime.fromISO(currentStartDate);
+            let prepStartDate = startDate.minus({ days: PREP_DURATION });
+            
+            // Calculate main tasks
+            let currentDate = prepStartDate;
+            for (let i = 0; i < taskCategories.length; i++) {
+                let task = { ...taskCategories[i] };
                 
-                // Điều chỉnh thời lượng theo tỷ lệ với tổng thời gian
-                if (task.id > 5) { // Các công việc thi công chính thức (không phải giai đoạn chuẩn bị)
-                    task.duration = Math.round(task.duration * totalDuration / 250);
+                // Starting from the second task (after preparation)
+                if (i > 0) {
+                    // Calculate duration in days (percentage of total duration)
+                    task.durationDays = Math.round(task.duration * currentTotalDuration);
+                } else {
+                    // Fixed duration for preparation
+                    task.durationDays = task.duration;
                 }
                 
-                // Tính ngày bắt đầu và kết thúc
-                if (task.id === 1) { // Giai đoạn chuẩn bị
-                    task.start = new Date(prepStartDate);
-                    task.end = calculateEndDate(task.start, task.duration);
-                } else if (task.id === 6) { // Bắt đầu thi công chính thức
-                    task.start = new Date(startDate);
-                    task.end = calculateEndDate(task.start, task.duration);
-                } else {
-                    const dependsOnTask = tasks.find(t => t.id === task.dependsOn);
-                    if (dependsOnTask) {
-                        if (task.id === 2 || task.id === 3) { // Các công việc chuẩn bị đầu tiên
-                            task.start = new Date(dependsOnTask.start);
-                        } else {
-                            // Các công việc khác bắt đầu sau khi công việc trước kết thúc
-                            task.start = new Date(dependsOnTask.end);
-                            task.start.setDate(task.start.getDate() + 1);
+                task.startDate = currentDate.toFormat('dd/MM/yyyy');
+                
+                // Calculate end date
+                currentDate = currentDate.plus({ days: task.durationDays });
+                task.endDate = currentDate.minus({ days: 1 }).toFormat('dd/MM/yyyy');
+                
+                // For tasks running in parallel, adjust current date
+                if (i > 0) {
+                    // For tasks that can overlap with previous tasks
+                    if (i === 3 || i === 7 || i === 8 || i === 10 || i === 11) {
+                        // Adjust currentDate to be the end date of task i-2
+                        currentDate = DateTime.fromFormat(currentTasks[i-2].endDate, 'dd/MM/yyyy').plus({ days: 1 });
+                    }
+                }
+                
+                currentTasks.push(task);
+            }
+            
+            // Calculate subtasks
+            for (let i = 0; i < detailedTasks.length; i++) {
+                let subtask = { ...detailedTasks[i] };
+                let parentTask = currentTasks[subtask.parent];
+                
+                // Get parent task start date
+                let parentStartDate = DateTime.fromFormat(parentTask.startDate, 'dd/MM/yyyy');
+                
+                // Calculate subtask duration
+                subtask.durationDays = Math.round(subtask.duration * parentTask.durationDays);
+                
+                // Calculate start offset in days
+                let startOffsetDays = Math.round(subtask.startOffset * parentTask.durationDays);
+                
+                // Calculate start date
+                subtask.startDate = parentStartDate.plus({ days: startOffsetDays }).toFormat('dd/MM/yyyy');
+                
+                // Calculate end date
+                subtask.endDate = parentStartDate.plus({ days: startOffsetDays + subtask.durationDays - 1 }).toFormat('dd/MM/yyyy');
+                
+                subtask.category = parentTask.category;
+                currentSubtasks.push(subtask);
+            }
+        }
+        
+        // Calculate payment values and dates
+        function calculatePayments() {
+            currentPayments = [];
+            
+            // First payment is on the start date
+            let firstPayment = {
+                ...paymentPhases[0],
+                amount: currentContractValue * (paymentPhases[0].percentage / 100),
+                date: DateTime.fromISO(currentStartDate).toFormat('dd/MM/yyyy')
+            };
+            currentPayments.push(firstPayment);
+            
+            // Calculate other payments
+            for (let i = 1; i < paymentPhases.length; i++) {
+                let payment = { ...paymentPhases[i] };
+                payment.amount = currentContractValue * (payment.percentage / 100);
+                
+                // Calculate payment date based on milestone
+                switch (payment.milestone) {
+                    case 'roof':
+                        // After completing roof construction (end of task 5 - Thi công mái công trình)
+                        payment.date = DateTime.fromFormat(currentSubtasks.find(st => st.parent === 5 && st.name === "Thi công mái công trình").endDate, 'dd/MM/yyyy').toFormat('dd/MM/yyyy');
+                        break;
+                    case 'masonry':
+                        // After 80% of masonry (halfway through task 9 - Hoàn thiện nhà từ đường)
+                        payment.date = DateTime.fromFormat(currentTasks[9].startDate, 'dd/MM/yyyy').plus({ days: Math.round(currentTasks[9].durationDays * 0.5) }).toFormat('dd/MM/yyyy');
+                        break;
+                    case 'finishing':
+                        // After 80% finishing and tiling (end of task 9 - Hoàn thiện nhà từ đường)
+                        payment.date = DateTime.fromFormat(currentTasks[9].endDate, 'dd/MM/yyyy').toFormat('dd/MM/yyyy');
+                        break;
+                    case 'furniture':
+                        // After furniture installation (end of task 10 - Thi công nội thất)
+                        payment.date = DateTime.fromFormat(currentTasks[10].endDate, 'dd/MM/yyyy').toFormat('dd/MM/yyyy');
+                        break;
+                    case 'completion':
+                        // After completion (end of task 12 - Hoàn thiện và bàn giao)
+                        payment.date = DateTime.fromFormat(currentTasks[12].endDate, 'dd/MM/yyyy').toFormat('dd/MM/yyyy');
+                        break;
+                    case 'warranty':
+                        // One year after completion
+                        payment.date = DateTime.fromFormat(currentTasks[12].endDate, 'dd/MM/yyyy').plus({ years: 1 }).toFormat('dd/MM/yyyy');
+                        break;
+                }
+                
+                currentPayments.push(payment);
+            }
+        }
+        
+        // Render schedule table
+        function renderScheduleTable() {
+            scheduleTableBody.innerHTML = '';
+            
+            // Add parent tasks
+            for (let i = 0; i < currentTasks.length; i++) {
+                const task = currentTasks[i];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td><strong>${task.name}</strong></td>
+                    <td>${task.startDate}</td>
+                    <td>${task.endDate}</td>
+                    <td>${task.durationDays}</td>
+                    <td>${i === 0 ? 'Giai đoạn chuẩn bị' : ''}</td>
+                `;
+                if (i === 0) row.classList.add('task-preparation');
+                scheduleTableBody.appendChild(row);
+                
+                // Add subtasks
+                const subtasks = currentSubtasks.filter(st => st.parent === i);
+                for (let j = 0; j < subtasks.length; j++) {
+                    const subtask = subtasks[j];
+                    const subrow = document.createElement('tr');
+                    subrow.innerHTML = `
+                        <td>${i + 1}.${j + 1}</td>
+                        <td>- ${subtask.name}</td>
+                        <td>${subtask.startDate}</td>
+                        <td>${subtask.endDate}</td>
+                        <td>${subtask.durationDays}</td>
+                        <td></td>
+                    `;
+                    
+                    // Add class based on category
+                    if (subtask.category === 'preparation') subrow.classList.add('task-preparation');
+                    else if (subtask.category === 'foundation') subrow.classList.add('task-foundation');
+                    else if (subtask.category === 'main-building') subrow.classList.add('task-main-building');
+                    else if (subtask.category === 'secondary') subrow.classList.add('task-secondary');
+                    else if (subtask.category === 'landscape') subrow.classList.add('task-landscape');
+                    else if (subtask.category === 'finishing') subrow.classList.add('task-finishing');
+                    
+                    scheduleTableBody.appendChild(subrow);
+                }
+            }
+        }
+        
+        // Render payment table
+        function renderPaymentTable() {
+            paymentTableBody.innerHTML = '';
+            
+            for (let i = 0; i < currentPayments.length; i++) {
+                const payment = currentPayments[i];
+                const row = document.createElement('tr');
+                
+                // Format the amount with thousand separators
+                const formattedAmount = payment.amount.toLocaleString('vi-VN');
+                
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td class="payment-phase">${payment.phase}</td>
+                    <td>${payment.percentage}%</td>
+                    <td>${formattedAmount}</td>
+                    <td>${payment.date}</td>
+                `;
+                paymentTableBody.appendChild(row);
+            }
+        }
+        
+        // Initialize Gantt chart
+        function initGanttChart() {
+            const series = [];
+            const categories = [];
+            
+            // Combine tasks and subtasks for the chart
+            const allTasks = [...currentTasks];
+            
+            // Add tasks to the chart
+            for (let i = 0; i < allTasks.length; i++) {
+                const task = allTasks[i];
+                const taskName = task.name;
+                
+                // Convert date strings to DateTime objects
+                const startDate = DateTime.fromFormat(task.startDate, 'dd/MM/yyyy');
+                const endDate = DateTime.fromFormat(task.endDate, 'dd/MM/yyyy');
+                
+                // Get task color based on category
+                const fillColor = getCategoryColor(task.category);
+                
+                series.push({
+                    name: taskName,
+                    data: [{
+                        x: taskName,
+                        y: [
+                            startDate.toMillis(),
+                            endDate.plus({ days: 1 }).toMillis() // Add 1 day to include end date
+                        ],
+                        fillColor: fillColor
+                    }]
+                });
+                
+                categories.push(taskName);
+            }
+            
+            // Add payment milestones
+            const payments = [];
+            for (let i = 0; i < currentPayments.length; i++) {
+                const payment = currentPayments[i];
+                const paymentDate = DateTime.fromFormat(payment.date, 'dd/MM/yyyy');
+                
+                payments.push({
+                    x: new Date(paymentDate.toISO()).getTime(),
+                    y: 0,
+                    marker: {
+                        size: 8,
+                        fillColor: '#ff0000',
+                        strokeColor: '#ffffff',
+                        radius: 2
+                    },
+                    label: {
+                        borderColor: '#ff0000',
+                        offsetY: -10,
+                        text: `Đợt ${i + 1}: ${payment.percentage}%`
+                    }
+                });
+            }
+            
+            const options = {
+                series: series,
+                chart: {
+                    height: 450,
+                    type: 'rangeBar',
+                    toolbar: {
+                        show: false
+                    },
+                    fontFamily: 'Roboto, sans-serif'
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        barHeight: '80%',
+                        rangeBarGroupRows: true
+                    }
+                },
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        datetimeFormatter: {
+                            day: 'dd/MM',
+                            month: 'MM/yyyy'
                         }
-                        task.end = calculateEndDate(task.start, task.duration);
                     }
-                }
-                
-                tasks.push(task);
-            }
-        }
-        
-        // Hàm vẽ biểu đồ Gantt
-        function drawGantt() {
-            const ganttContainer = document.getElementById("ganttChart");
-            ganttContainer.innerHTML = "";
-            ganttContainer.style.width = `${ganttWidth + 50}px`;
-            
-            // Tìm ngày bắt đầu và kết thúc của toàn bộ dự án
-            const projectStart = tasks.reduce((min, task) => task.start < min ? task.start : min, tasks[0].start);
-            const projectEnd = tasks.reduce((max, task) => task.end > max ? task.end : max, tasks[0].end);
-            
-            const projectDuration = (projectEnd - projectStart) / (1000 * 60 * 60 * 24) + 1;
-            
-            // Tạo thang đo thời gian
-            const scaleEl = document.createElement("div");
-            scaleEl.className = "gantt-scale";
-            
-            // Tạo các marker cho mỗi tháng
-            let currentDate = new Date(projectStart);
-            currentDate.setDate(1); // Bắt đầu từ ngày 1 của tháng
-            
-            while (currentDate <= projectEnd) {
-                const days = (currentDate - projectStart) / (1000 * 60 * 60 * 24);
-                const left = days * dayWidth;
-                
-                const markerEl = document.createElement("div");
-                markerEl.className = "gantt-scale-marker";
-                markerEl.style.left = `${left}px`;
-                
-                const textEl = document.createElement("div");
-                textEl.className = "gantt-scale-text";
-                textEl.style.left = `${left + 5}px`;
-                textEl.textContent = `${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
-                
-                scaleEl.appendChild(markerEl);
-                scaleEl.appendChild(textEl);
-                
-                // Tăng lên 1 tháng
-                currentDate.setMonth(currentDate.getMonth() + 1);
-            }
-            
-            ganttContainer.appendChild(scaleEl);
-            
-            // Tạo các hàng cho biểu đồ Gantt
-            for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
-                
-                const rowEl = document.createElement("div");
-                rowEl.className = "gantt-row";
-                
-                // Tính vị trí của công việc trên biểu đồ
-                const days = (task.start - projectStart) / (1000 * 60 * 60 * 24);
-                const left = days * dayWidth;
-                const width = task.duration * dayWidth;
-                
-                // Tạo thanh công việc
-                if (task.id !== 65) { // Không vẽ thanh cho công việc bảo hành (quá dài)
-                    const taskEl = document.createElement("div");
-                    taskEl.className = `gantt-task task-type-${task.type}`;
-                    taskEl.style.left = `${left}px`;
-                    taskEl.style.width = `${width}px`;
-                    taskEl.setAttribute("data-id", task.id);
-                    taskEl.setAttribute("data-name", task.name);
-                    taskEl.setAttribute("data-start", formatDate(task.start));
-                    taskEl.setAttribute("data-end", formatDate(task.end));
-                    taskEl.setAttribute("data-duration", task.duration);
-                    
-                    // Thêm tooltip khi hover
-                    taskEl.addEventListener("mouseover", function(e) {
-                        const tooltip = document.getElementById("tooltip");
-                        tooltip.innerHTML = `
-                            <strong>${task.name}</strong><br>
-                            Bắt đầu: ${formatDate(task.start)}<br>
-                            Kết thúc: ${formatDate(task.end)}<br>
-                            Thời gian: ${task.duration} ngày<br>
-                            ${task.note ? `Ghi chú: ${task.note}` : ''}
-                        `;
-                        tooltip.style.display = "block";
-                        tooltip.style.left = `${e.pageX + 10}px`;
-                        tooltip.style.top = `${e.pageY + 10}px`;
-                    });
-                    
-                    taskEl.addEventListener("mouseout", function() {
-                        document.getElementById("tooltip").style.display = "none";
-                    });
-                    
-                    rowEl.appendChild(taskEl);
-                }
-                
-                // Thêm các mốc thanh toán
-                const payment = paymentData.find(p => p.taskId === task.id);
-                if (payment) {
-                    const milestoneEl = document.createElement("div");
-                    milestoneEl.className = "gantt-milestone";
-                    milestoneEl.style.left = `${left}px`;
-                    milestoneEl.style.top = "7px";
-                    milestoneEl.setAttribute("data-payment", payment.id);
-                    milestoneEl.setAttribute("data-name", payment.name);
-                    milestoneEl.setAttribute("data-percentage", payment.percentage);
-                    
-                    // Thêm tooltip khi hover
-                    milestoneEl.addEventListener("mouseover", function(e) {
-                        const tooltip = document.getElementById("tooltip");
-                        tooltip.innerHTML = `
-                            <strong>Đợt thanh toán ${payment.id}: ${payment.name}</strong><br>
-                            Giá trị: ${payment.percentage}% (${formatNumber(contractValue * payment.percentage / 100)} VNĐ)<br>
-                            Ngày: ${formatDate(task.start)}
-                        `;
-                        tooltip.style.display = "block";
-                        tooltip.style.left = `${e.pageX + 10}px`;
-                        tooltip.style.top = `${e.pageY + 10}px`;
-                    });
-                    
-                    milestoneEl.addEventListener("mouseout", function() {
-                        document.getElementById("tooltip").style.display = "none";
-                    });
-                    
-                    rowEl.appendChild(milestoneEl);
-                }
-                
-                ganttContainer.appendChild(rowEl);
-            }
-        }
-        
-        // Hàm cập nhật bảng công việc
-        function updateTaskTable() {
-            const tbody = document.querySelector("#taskTable tbody");
-            tbody.innerHTML = "";
-            
-            for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
-                
-                const tr = document.createElement("tr");
-                
-                // STT
-                const tdId = document.createElement("td");
-                tdId.textContent = task.id;
-                tr.appendChild(tdId);
-                
-                // Hạng mục công việc
-                const tdName = document.createElement("td");
-                tdName.textContent = task.name;
-                // Định dạng đậm cho các hạng mục chính
-                if (task.id === 1 || task.id === 6 || task.id === 11 || task.id === 14 || 
-                    task.id === 18 || task.id === 22 || task.id === 27 || task.id === 31 || 
-                    task.id === 36 || task.id === 40 || task.id === 49 || task.id === 55 || 
-                    task.id === 61) {
-                    tdName.style.fontWeight = "bold";
-                }
-                tr.appendChild(tdName);
-                
-                // Loại công việc
-                const tdType = document.createElement("td");
-                const types = ["", "Giải phóng mặt bằng", "Gia cố nền & Móng", "Công trình nhà chính", 
-                            "Công trình phụ", "Sân vườn & Hạ tầng", "Hoàn thiện"];
-                tdType.textContent = types[task.type];
-                tr.appendChild(tdType);
-                
-                // Thời gian bắt đầu
-                const tdStart = document.createElement("td");
-                tdStart.textContent = formatDate(task.start);
-                tr.appendChild(tdStart);
-                
-                // Thời gian hoàn thành
-                const tdEnd = document.createElement("td");
-                tdEnd.textContent = formatDate(task.end);
-                tr.appendChild(tdEnd);
-                
-                // Số ngày
-                const tdDuration = document.createElement("td");
-                tdDuration.textContent = task.duration;
-                tr.appendChild(tdDuration);
-                
-                // Ghi chú
-                const tdNote = document.createElement("td");
-                if (task.percentage > 0) {
-                    tdNote.innerHTML = `<strong>Đợt thanh toán ${paymentData.find(p => p.taskId === task.id).id}: ${task.percentage}%</strong>`;
-                    if (task.note) {
-                        tdNote.innerHTML += `<br>${task.note}`;
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
                     }
-                } else {
-                    tdNote.textContent = task.note;
+                },
+                tooltip: {
+                    custom: function({ seriesIndex, dataPointIndex, w }) {
+                        const task = allTasks[seriesIndex];
+                        return `
+                            <div class="p-2">
+                                <strong>${task.name}</strong><br>
+                                Từ: ${task.startDate}<br>
+                                Đến: ${task.endDate}<br>
+                                Thời gian: ${task.durationDays} ngày
+                            </div>
+                        `;
+                    }
+                },
+                annotations: {
+                    xaxis: currentPayments.map((payment, index) => {
+                        const paymentDate = DateTime.fromFormat(payment.date, 'dd/MM/yyyy');
+                        return {
+                            x: paymentDate.toMillis(),
+                            borderColor: '#FF4560',
+                            label: {
+                                style: {
+                                    color: '#fff',
+                                    background: '#FF4560'
+                                },
+                                text: `Đợt ${index + 1}: ${payment.percentage}%`
+                            }
+                        };
+                    })
+                },
+                grid: {
+                    borderColor: '#e0e0e0',
+                    strokeDashArray: 4,
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                fill: {
+                    type: 'solid',
+                    opacity: 1
                 }
-                tr.appendChild(tdNote);
-                
-                tbody.appendChild(tr);
+            };
+            
+            if (ganttChart) {
+                ganttChart.destroy();
+            }
+            
+            ganttChart = new ApexCharts(ganttChartElem, options);
+            ganttChart.render();
+        }
+        
+        // Get color based on task category
+        function getCategoryColor(category) {
+            switch (category) {
+                case 'preparation': return '#93c5fd'; // blue-300
+                case 'foundation': return '#86efac'; // green-300
+                case 'main-building': return '#fdba74'; // orange-300
+                case 'secondary': return '#c4b5fd'; // violet-300
+                case 'landscape': return '#67e8f9'; // cyan-300
+                case 'finishing': return '#f9a8d4'; // pink-300
+                default: return '#d1d5db'; // gray-300
             }
         }
         
-        // Hàm cập nhật bảng đợt thanh toán
-        function updatePaymentTable() {
-            const tbody = document.querySelector("#paymentTable tbody");
-            tbody.innerHTML = "";
+        // Format number with thousand separators
+        function formatNumber(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // Event listeners
+        updateBtn.addEventListener('click', function() {
+            // Validate input
+            let isValid = true;
+            let messages = [];
             
-            for (let i = 0; i < paymentData.length; i++) {
-                const payment = paymentData[i];
-                const task = tasks.find(t => t.id === payment.taskId);
-                
-                const tr = document.createElement("tr");
-                tr.className = "payment-row";
-                
-                // Đợt
-                const tdId = document.createElement("td");
-                tdId.textContent = payment.id;
-                tr.appendChild(tdId);
-                
-                // Giai đoạn thanh toán
-                const tdName = document.createElement("td");
-                tdName.textContent = payment.name;
-                tr.appendChild(tdName);
-                
-                // Tỷ lệ
-                const tdPercentage = document.createElement("td");
-                tdPercentage.textContent = `${payment.percentage}%`;
-                tr.appendChild(tdPercentage);
-                
-                // Giá trị
-                const tdValue = document.createElement("td");
-                tdValue.textContent = formatNumber(contractValue * payment.percentage / 100);
-                tdValue.className = "format-number";
-                tr.appendChild(tdValue);
-                
-                // Thời gian
-                const tdTime = document.createElement("td");
-                tdTime.textContent = task ? formatDate(task.start) : "-";
-                tr.appendChild(tdTime);
-                
-                tbody.appendChild(tr);
+            // Validate contract value
+            const contractValue = parseFloat(contractValueInput.value.replace(/,/g, ''));
+            if (isNaN(contractValue) || contractValue <= 0) {
+                isValid = false;
+                messages.push({ type: 'error', message: 'Giá trị hợp đồng không hợp lệ' });
             }
-        }
-        
-        // Hàm cập nhật toàn bộ giao diện
-        function updateUI() {
-            // Xử lý giá trị hợp đồng
-            const contractValueInput = document.getElementById("contractValue").value;
-            contractValue = Number(contractValueInput.replace(/[^0-9]/g, ""));
-            document.getElementById("contractValue").value = formatNumber(contractValue);
             
-            // Xử lý ngày bắt đầu
-            const startDateInput = document.getElementById("startDate").value;
-            startDate = new Date(startDateInput);
+            // Validate start date
+            const startDate = startDateInput.value;
+            if (!startDate) {
+                isValid = false;
+                messages.push({ type: 'error', message: 'Ngày bắt đầu không hợp lệ' });
+            }
             
-            // Xử lý tổng thời gian thi công
-            totalDuration = Number(document.getElementById("totalDuration").value) || 250;
+            // Validate total duration
+            const totalDuration = parseInt(totalDurationInput.value);
+            if (isNaN(totalDuration) || totalDuration < 100 || totalDuration > 500) {
+                isValid = false;
+                messages.push({ type: 'error', message: 'Tổng thời gian thi công phải từ 100 đến 500 ngày' });
+            }
             
-            // Tạo lại danh sách công việc
-            recreateTasks();
+            // If invalid, show messages and return
+            if (!isValid) {
+                logContainer.innerHTML = '';
+                logContainer.classList.remove('hidden');
+                
+                messages.forEach(msg => {
+                    const logEntry = document.createElement('div');
+                    logEntry.classList.add('log-entry', msg.type);
+                    logEntry.textContent = msg.message;
+                    logContainer.appendChild(logEntry);
+                });
+                
+                return;
+            }
             
-            // Vẽ lại biểu đồ Gantt
-            drawGantt();
+            // Update current values
+            currentStartDate = startDate;
+            currentTotalDuration = totalDuration;
+            currentContractValue = contractValue;
             
-            // Cập nhật bảng công việc
-            updateTaskTable();
+            // Calculate preparation start date
+            calcPrepStartDate();
             
-            // Cập nhật bảng đợt thanh toán
-            updatePaymentTable();
+            // Calculate schedule
+            calculateSchedule();
             
-            // Cập nhật ngày tạo báo cáo
-            document.getElementById("reportDate").textContent = formatDate(new Date());
-        }
-        
-        // Khởi tạo giao diện
-        document.addEventListener("DOMContentLoaded", function() {
-            // Thiết lập ngày hiện tại cho input date
-            document.getElementById("startDate").value = "2025-05-05";
+            // Calculate payments
+            calculatePayments();
             
-            // Cập nhật giao diện
-            updateUI();
+            // Render tables and chart
+            renderScheduleTable();
+            renderPaymentTable();
+            initGanttChart();
             
-            // Xử lý sự kiện nhấn nút cập nhật
-            document.getElementById("updateButton").addEventListener("click", function() {
-                updateUI();
-            });
+            // Show success message
+            logContainer.innerHTML = '';
+            logContainer.classList.remove('hidden');
             
-            // Xử lý sự kiện phóng to biểu đồ
-            document.getElementById("zoomIn").addEventListener("click", function() {
-                if (currentScale < 3) {
-                    currentScale += 0.25;
-                    dayWidth = 2 * currentScale;
-                    ganttWidth = (tasks[tasks.length - 1].end - tasks[0].start) / (1000 * 60 * 60 * 24) * dayWidth;
-                    drawGantt();
-                }
-            });
+            const logEntry = document.createElement('div');
+            logEntry.classList.add('log-entry', 'info');
+            logEntry.textContent = 'Cập nhật thành công';
+            logContainer.appendChild(logEntry);
             
-            // Xử lý sự kiện thu nhỏ biểu đồ
-            document.getElementById("zoomOut").addEventListener("click", function() {
-                if (currentScale > 0.5) {
-                    currentScale -= 0.25;
-                    dayWidth = 2 * currentScale;
-                    ganttWidth = (tasks[tasks.length - 1].end - tasks[0].start) / (1000 * 60 * 60 * 24) * dayWidth;
-                    drawGantt();
-                }
-            });
-            
-            // Xử lý sự kiện đặt lại kích thước biểu đồ
-            document.getElementById("zoomReset").addEventListener("click", function() {
-                currentScale = 1;
-                dayWidth = 2;
-                ganttWidth = (tasks[tasks.length - 1].end - tasks[0].start) / (1000 * 60 * 60 * 24) * dayWidth;
-                drawGantt();
-            });
-            
-            // Xử lý định dạng số cho input giá trị hợp đồng
-            document.getElementById("contractValue").addEventListener("blur", function() {
-                const value = this.value.replace(/[^0-9]/g, "");
-                this.value = formatNumber(value);
-            });
+            // Hide log after 3 seconds
+            setTimeout(() => {
+                logContainer.classList.add('hidden');
+            }, 3000);
         });
+        
+        // Format contract value with thousand separators
+        contractValueInput.addEventListener('input', function(e) {
+            // Remove all non-digit characters
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Format with thousand separators
+            if (value) {
+                value = parseInt(value).toLocaleString('en-US');
+            }
+            
+            // Update input value
+            e.target.value = value;
+        });
+        
+        // Zoom controls
+        zoomInBtn.addEventListener('click', function() {
+            if (ganttChart) {
+                ganttChart.zoomX(0.5, 1.5);
+            }
+        });
+        
+        zoomOutBtn.addEventListener('click', function() {
+            if (ganttChart) {
+                ganttChart.zoomX(1.5, 0.5);
+            }
+        });
+        
+        zoomFitBtn.addEventListener('click', function() {
+            if (ganttChart) {
+                ganttChart.resetSeries();
+            }
+        });
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
