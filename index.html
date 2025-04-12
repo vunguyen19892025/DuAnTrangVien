@@ -1,1344 +1,835 @@
+Copy
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bảng Tiến Độ Thi Công - Dự Án Trang Viên Dầu Tiếng</title>
+    <title>Bảng Tiến Độ Thi Công Dự Án Trang Viên - Dầu Tiếng</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9fafb;
+            background-color: #f8fafc;
         }
-        .header-gradient {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        .chart-container {
+            overflow-x: auto;
+            min-height: 600px;
         }
-        .primary-button {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .table-header {
-            background-color: #1e40af;
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        tr:hover {
+            background-color: #e2e8f0;
+        }
+        .zoom-controls {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .zoom-btn {
+            background-color: #3b82f6;
             color: white;
-        }
-        .phase-row {
-            background-color: #dbeafe;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
         }
-        .subphase-row {
-            background-color: #eff6ff;
+        .zoom-btn:hover {
+            background-color: #2563eb;
         }
-        .table-container {
-            overflow-x: auto;
-        }
-        .gantt-legend {
+        .payment-milestone {
             display: flex;
             align-items: center;
-            margin-top: 10px;
-            flex-wrap: wrap;
+            margin-right: 10px;
         }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-            margin-bottom: 5px;
-        }
-        .legend-color {
-            width: 15px;
-            height: 15px;
+        .payment-milestone span {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
             margin-right: 5px;
-            border-radius: 3px;
+        }
+        .header-section {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .control-panel {
+            background-color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .control-panel label {
+            font-weight: bold;
+        }
+        .btn-update {
+            background-color: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-update:hover {
+            background-color: #059669;
+        }
+        .progress-label {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         @media print {
             body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
                 background-color: white;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            }
+            .print-container {
+                width: 100%;
+                padding: 20px;
             }
             .no-print {
                 display: none;
             }
-            .page-break {
-                page-break-after: avoid;
-            }
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="header-gradient rounded-lg shadow-lg p-6 mb-8 text-white">
-            <div class="flex flex-col md:flex-row justify-between items-center">
+<body class="p-4 md:p-8">
+    <div class="print-container">
+        <div class="header-section mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2 text-center">BẢNG TIẾN ĐỘ THI CÔNG DỰ ÁN TRANG VIÊN - DẦU TIẾNG</h1>
+            <div class="flex flex-col md:flex-row justify-between text-sm md:text-base">
                 <div>
-                    <h1 class="text-3xl font-bold mb-2">BẢNG TIẾN ĐỘ THI CÔNG</h1>
-                    <h2 class="text-2xl">Dự Án: TRANG VIÊN - DẦU TIẾNG</h2>
+                    <p><strong>Chủ đầu tư:</strong> ANH HƯNG</p>
+                    <p><strong>Đơn vị thi công:</strong> CÔNG TY TNHH NÉT VIỆT</p>
                 </div>
-                <div class="mt-4 md:mt-0">
-                    <p class="text-lg mb-1">Chủ đầu tư: ANH HƯNG</p>
-                    <p class="text-lg mb-1">Tổng thời gian: 250 ngày</p>
-                    <p class="text-lg">Thời gian bắt đầu: 15/04/2025</p>
+                <div>
+                    <p><strong>Địa điểm:</strong> DẦU TIẾNG</p>
+                    <p><strong>Tổng giá trị hợp đồng:</strong>...........</p>
                 </div>
             </div>
         </div>
 
-        <!-- Thông tin dự án -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">THÔNG TIN DỰ ÁN</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="control-panel no-print">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <p class="mb-2"><span class="font-semibold">Địa điểm:</span> Dầu Tiếng, Bình Dương</p>
-                    <p class="mb-2"><span class="font-semibold">Tổng diện tích:</span> Khoảng 2,700m²</p>
-                    <p class="mb-2"><span class="font-semibold">Tổng giá trị:</span> ............ VNĐ</p>
+                    <label for="startDate" class="block mb-2">Ngày bắt đầu thi công chính thức:</label>
+                    <input type="text" id="startDate" class="w-full p-2 border rounded" value="05/05/2025">
                 </div>
                 <div>
-                    <p class="mb-2"><span class="font-semibold">Đơn vị thi công:</span> Công ty TNHH NÉT VIỆT</p>
-                    <p class="mb-2"><span class="font-semibold">Quy mô:</span> Nhà từ đường, cổng tam quan, khu nghĩa trang, hồ koi, nhà chòi vọng cảnh</p>
-                    <p class="mb-2"><span class="font-semibold">Phương thức:</span> Thi công trọn gói</p>
+                    <label for="totalDays" class="block mb-2">Tổng thời gian thi công (ngày):</label>
+                    <div class="flex">
+                        <button id="decreaseDays" class="bg-gray-200 px-4 py-2 rounded-l font-bold text-xl">-</button>
+                        <input type="number" id="totalDays" class="w-full p-2 border-t border-b text-center" value="250" min="50" max="500">
+                        <button id="increaseDays" class="bg-gray-200 px-4 py-2 rounded-r font-bold text-xl">+</button>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Biểu đồ Gantt -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">BIỂU ĐỒ TIẾN ĐỘ GANTT</h3>
-            <div id="gantt-chart" style="min-height: 800px;"></div>
-            <div class="gantt-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #008FFB;"></div>
-                    <div>Giải phóng mặt bằng</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #00E396;"></div>
-                    <div>Gia cố nền & Móng</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #FEB019;"></div>
-                    <div>Công trình nhà chính</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #FF4560;"></div>
-                    <div>Cổng tam quan</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #775DD0;"></div>
-                    <div>Công trình phụ</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #00D9E9;"></div>
-                    <div>Sân vườn & Hạ tầng</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #FF66C4;"></div>
-                    <div>Hoàn thiện</div>
-                </div>
+            <div class="text-sm text-gray-600 mb-4">
+                <p>* Giai đoạn chuẩn bị bắt đầu 20 ngày trước ngày khởi công chính thức và không tính vào tổng thời gian thi công.</p>
+                <p>* Đợt thanh toán 1 (50%) thực hiện vào ngày bắt đầu thi công chính thức.</p>
+                <p>* Khi thay đổi tổng thời gian thi công, thời gian của các hạng mục sẽ thay đổi tỷ lệ tương ứng.</p>
             </div>
+            <button id="updateBtn" class="btn-update">Cập nhật</button>
         </div>
 
-        <!-- Bảng tiến độ chi tiết -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">BẢNG TIẾN ĐỘ CHI TIẾT</h3>
-            <div class="table-container">
-                <table class="min-w-full border border-gray-300">
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4 bg-gray-100 p-2">Biểu đồ Gantt tiến độ thi công</h2>
+            <div class="zoom-controls no-print">
+                <button id="zoomOut" class="zoom-btn">-</button>
+                <button id="zoomReset" class="zoom-btn">Xem toàn bộ</button>
+                <button id="zoomIn" class="zoom-btn">+</button>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <div class="payment-milestone"><span class="bg-red-500"></span> Đợt thanh toán</div>
+                <div class="payment-milestone"><span class="bg-blue-500"></span> Giai đoạn chuẩn bị</div>
+                <div class="payment-milestone"><span class="bg-green-500"></span> Gia cố nền & Móng</div>
+                <div class="payment-milestone"><span class="bg-yellow-500"></span> Công trình nhà chính</div>
+                <div class="payment-milestone"><span class="bg-purple-500"></span> Công trình phụ</div>
+                <div class="payment-milestone"><span class="bg-cyan-500"></span> Sân vườn & Hạ tầng</div>
+                <div class="payment-milestone"><span class="bg-pink-500"></span> Hoàn thiện</div>
+            </div>
+            <div id="chart" class="chart-container"></div>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4 bg-gray-100 p-2">Bảng chi tiết tiến độ thi công</h2>
+            <div class="overflow-auto">
+                <table id="taskTable">
                     <thead>
-                        <tr class="table-header">
-                            <th class="py-3 px-4 border text-left">STT</th>
-                            <th class="py-3 px-4 border text-left">Hạng mục công việc</th>
-                            <th class="py-3 px-4 border text-center">Thời gian bắt đầu</th>
-                            <th class="py-3 px-4 border text-center">Thời gian hoàn thành</th>
-                            <th class="py-3 px-4 border text-center">Số ngày thực hiện</th>
-                            <th class="py-3 px-4 border text-left">Ghi chú</th>
+                        <tr>
+                            <th>STT</th>
+                            <th>Hạng mục công việc</th>
+                            <th>Thời gian bắt đầu</th>
+                            <th>Thời gian hoàn thành</th>
+                            <th>Số ngày</th>
+                            <th>Ghi chú</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Giai đoạn chuẩn bị -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">1</td>
-                            <td class="py-2 px-4 border font-bold">GIAI ĐOẠN CHUẨN BỊ</td>
-                            <td class="py-2 px-4 border text-center">15/04/2025</td>
-                            <td class="py-2 px-4 border text-center">04/05/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 1: 50%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">1.1</td>
-                            <td class="py-2 px-4 border">Trắc đạc, định vị công trình</td>
-                            <td class="py-2 px-4 border text-center">15/04/2025</td>
-                            <td class="py-2 px-4 border text-center">19/04/2025</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 109</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">1.2</td>
-                            <td class="py-2 px-4 border">Tổ chức công trường, làm lán trại</td>
-                            <td class="py-2 px-4 border text-center">15/04/2025</td>
-                            <td class="py-2 px-4 border text-center">22/04/2025</td>
-                            <td class="py-2 px-4 border text-center">8</td>
-                            <td class="py-2 px-4 border">Điều 3.1</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">1.3</td>
-                            <td class="py-2 px-4 border">Phá dỡ công trình hiện trạng</td>
-                            <td class="py-2 px-4 border text-center">20/04/2025</td>
-                            <td class="py-2 px-4 border text-center">29/04/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 131</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">1.4</td>
-                            <td class="py-2 px-4 border">Xây tường rào bảo vệ công trình</td>
-                            <td class="py-2 px-4 border text-center">25/04/2025</td>
-                            <td class="py-2 px-4 border text-center">04/05/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Điều 3.3</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công phần móng -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">2</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG</td>
-                            <td class="py-2 px-4 border text-center">05/05/2025</td>
-                            <td class="py-2 px-4 border text-center">13/06/2025</td>
-                            <td class="py-2 px-4 border text-center">40</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">2.1</td>
-                            <td class="py-2 px-4 border">Đào đắp đất tổng thể</td>
-                            <td class="py-2 px-4 border text-center">05/05/2025</td>
-                            <td class="py-2 px-4 border text-center">19/05/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 110</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">2.2</td>
-                            <td class="py-2 px-4 border">Ép cọc BTCT 250x250</td>
-                            <td class="py-2 px-4 border text-center">20/05/2025</td>
-                            <td class="py-2 px-4 border text-center">03/06/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục A</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">2.3</td>
-                            <td class="py-2 px-4 border">Khoan giếng ngầm</td>
-                            <td class="py-2 px-4 border text-center">04/06/2025</td>
-                            <td class="py-2 px-4 border text-center">08/06/2025</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 125</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">2.4</td>
-                            <td class="py-2 px-4 border">Đào hố thấm tự nhiên</td>
-                            <td class="py-2 px-4 border text-center">09/06/2025</td>
-                            <td class="py-2 px-4 border text-center">13/06/2025</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 127</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công móng nhà từ đường -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">3</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ</td>
-                            <td class="py-2 px-4 border text-center">14/06/2025</td>
-                            <td class="py-2 px-4 border text-center">03/08/2025</td>
-                            <td class="py-2 px-4 border text-center">50</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">3.1</td>
-                            <td class="py-2 px-4 border">Thi công phần móng nhà từ đường</td>
-                            <td class="py-2 px-4 border text-center">14/06/2025</td>
-                            <td class="py-2 px-4 border text-center">13/07/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 13</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">3.2</td>
-                            <td class="py-2 px-4 border">Thi công nâng cao khối đế lên 0.8m</td>
-                            <td class="py-2 px-4 border text-center">14/07/2025</td>
-                            <td class="py-2 px-4 border text-center">03/08/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Hạng mục 14</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công móng các công trình phụ -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">4</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG MÓNG CÔNG TRÌNH PHỤ</td>
-                            <td class="py-2 px-4 border text-center">14/06/2025</td>
-                            <td class="py-2 px-4 border text-center">13/07/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">4.1</td>
-                            <td class="py-2 px-4 border">Móng cổng tam quan</td>
-                            <td class="py-2 px-4 border text-center">14/06/2025</td>
-                            <td class="py-2 px-4 border text-center">23/06/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 4</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">4.2</td>
-                            <td class="py-2 px-4 border">Móng chòi vọng cảnh</td>
-                            <td class="py-2 px-4 border text-center">24/06/2025</td>
-                            <td class="py-2 px-4 border text-center">03/07/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 95</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">4.3</td>
-                            <td class="py-2 px-4 border">Đào hồ Koi và xử lý nền</td>
-                            <td class="py-2 px-4 border text-center">04/07/2025</td>
-                            <td class="py-2 px-4 border text-center">13/07/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 100</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công tường rào -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">5</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG TƯỜNG RÀO & NÂNG NỀN</td>
-                            <td class="py-2 px-4 border text-center">04/08/2025</td>
-                            <td class="py-2 px-4 border text-center">02/09/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">5.1</td>
-                            <td class="py-2 px-4 border">Xây tường bó để nâng nền toàn khối</td>
-                            <td class="py-2 px-4 border text-center">04/08/2025</td>
-                            <td class="py-2 px-4 border text-center">13/08/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 1</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">5.2</td>
-                            <td class="py-2 px-4 border">Thi công tường rào thường</td>
-                            <td class="py-2 px-4 border text-center">14/08/2025</td>
-                            <td class="py-2 px-4 border text-center">28/08/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 2</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">5.3</td>
-                            <td class="py-2 px-4 border">Thi công tường rào có hoa văn phù điêu</td>
-                            <td class="py-2 px-4 border text-center">29/08/2025</td>
-                            <td class="py-2 px-4 border text-center">02/09/2025</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 3</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công nhà chính -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">6</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)</td>
-                            <td class="py-2 px-4 border text-center">04/08/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">70</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 2: 25%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">6.1</td>
-                            <td class="py-2 px-4 border">Thi công tầng trệt nhà chính</td>
-                            <td class="py-2 px-4 border text-center">04/08/2025</td>
-                            <td class="py-2 px-4 border text-center">02/09/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 15</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">6.2</td>
-                            <td class="py-2 px-4 border">Thi công mái công trình</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">02/10/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 16</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">6.3</td>
-                            <td class="py-2 px-4 border">Thi công phù điêu đỉnh, diềm mái</td>
-                            <td class="py-2 px-4 border text-center">28/09/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 17</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">6.4</td>
-                            <td class="py-2 px-4 border">Lắp đặt cuốn thư đá</td>
-                            <td class="py-2 px-4 border text-center">03/10/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 18</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công cổng tam quan -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">7</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG CỔNG TAM QUAN</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">40</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">7.1</td>
-                            <td class="py-2 px-4 border">Thi công phần thân cổng</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">17/09/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 5</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">7.2</td>
-                            <td class="py-2 px-4 border">Thi công phần mái cổng</td>
-                            <td class="py-2 px-4 border text-center">18/09/2025</td>
-                            <td class="py-2 px-4 border text-center">02/10/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 6-7</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">7.3</td>
-                            <td class="py-2 px-4 border">Lắp đặt bộ cửa cổng chính và phụ</td>
-                            <td class="py-2 px-4 border text-center">03/10/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 8-9</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công công trình phụ -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">8</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG CÔNG TRÌNH PHỤ</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">01/11/2025</td>
-                            <td class="py-2 px-4 border text-center">60</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 3: 10%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">8.1</td>
-                            <td class="py-2 px-4 border">Thi công thân và mái nhà chòi vọng cảnh</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">02/10/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 96-97</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">8.2</td>
-                            <td class="py-2 px-4 border">Thi công hồ Koi</td>
-                            <td class="py-2 px-4 border text-center">03/09/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">40</td>
-                            <td class="py-2 px-4 border">Hạng mục 100</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">8.3</td>
-                            <td class="py-2 px-4 border">Thi công khu nghĩa trang</td>
-                            <td class="py-2 px-4 border text-center">13/09/2025</td>
-                            <td class="py-2 px-4 border text-center">12/10/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 103-108</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">8.4</td>
-                            <td class="py-2 px-4 border">Xây nhà kho và bồn nước</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">01/11/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Hạng mục 123</td>
-                        </tr>
-
-                        <!-- Giai đoạn thi công hạ tầng -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">9</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG HẠ TẦNG TỔNG THỂ</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">11/11/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">9.1</td>
-                            <td class="py-2 px-4 border">Thi công bê tông nền cảnh quan và đường dạo</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">27/10/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 111</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">9.2</td>
-                            <td class="py-2 px-4 border">Xây bó vỉa và hoàn thiện nền đá</td>
-                            <td class="py-2 px-4 border text-center">28/10/2025</td>
-                            <td class="py-2 px-4 border text-center">06/11/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 112-113-117</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">9.3</td>
-                            <td class="py-2 px-4 border">Lắp đặt hệ thống thoát nước và tưới tự động</td>
-                            <td class="py-2 px-4 border text-center">28/10/2025</td>
-                            <td class="py-2 px-4 border text-center">11/11/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 116</td>
-                        </tr>
-
-                        <!-- Giai đoạn hoàn thiện nhà chính -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">10</td>
-                            <td class="py-2 px-4 border font-bold">HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">11/12/2025</td>
-                            <td class="py-2 px-4 border text-center">60</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 4: 5%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">10.1</td>
-                            <td class="py-2 px-4 border">Thi công ốp lát gạch</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">01/11/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Hạng mục 20-24</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.2</td>
-                            <td class="py-2 px-4 border">Thi công ốp đá và lan can</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">11/11/2025</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Hạng mục 25-26</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.3</td>
-                            <td class="py-2 px-4 border">Lắp đặt hệ thống điện và nước âm tường</td>
-                            <td class="py-2 px-4 border text-center">13/10/2025</td>
-                            <td class="py-2 px-4 border text-center">01/11/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Hạng mục 19</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.4</td>
-                            <td class="py-2 px-4 border">Lắp đặt cửa gỗ</td>
-                            <td class="py-2 px-4 border text-center">02/11/2025</td>
-                            <td class="py-2 px-4 border text-center">16/11/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 31-39</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.5</td>
-                            <td class="py-2 px-4 border">Sơn nước trong và ngoài nhà</td>
-                            <td class="py-2 px-4 border text-center">02/11/2025</td>
-                            <td class="py-2 px-4 border text-center">21/11/2025</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Hạng mục 28-29-30</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.6</td>
-                            <td class="py-2 px-4 border">Lắp đặt thiết bị vệ sinh</td>
-                            <td class="py-2 px-4 border text-center">17/11/2025</td>
-                            <td class="py-2 px-4 border text-center">26/11/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 40-44</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.7</td>
-                            <td class="py-2 px-4 border">Lắp đặt thiết bị điện và chiếu sáng</td>
-                            <td class="py-2 px-4 border text-center">17/11/2025</td>
-                            <td class="py-2 px-4 border text-center">01/12/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 74-93</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">10.8</td>
-                            <td class="py-2 px-4 border">Xử lý phòng chống mối</td>
-                            <td class="py-2 px-4 border text-center">27/11/2025</td>
-                            <td class="py-2 px-4 border text-center">01/12/2025</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 129</td>
-                        </tr>
-
-                        <!-- Giai đoạn nội thất -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">11</td>
-                            <td class="py-2 px-4 border font-bold">THI CÔNG NỘI THẤT</td>
-                            <td class="py-2 px-4 border text-center">02/12/2025</td>
-                            <td class="py-2 px-4 border text-center">01/01/2026</td>
-                            <td class="py-2 px-4 border text-center">30</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 5: 4%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">11.1</td>
-                            <td class="py-2 px-4 border">Thi công trần trang trí hoa văn</td>
-                            <td class="py-2 px-4 border text-center">02/12/2025</td>
-                            <td class="py-2 px-4 border text-center">11/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 55</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">11.2</td>
-                            <td class="py-2 px-4 border">Lắp đặt vách ốp tường sau bàn thờ</td>
-                            <td class="py-2 px-4 border text-center">02/12/2025</td>
-                            <td class="py-2 px-4 border text-center">11/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 49</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">11.3</td>
-                            <td class="py-2 px-4 border">Lắp đặt bàn thờ và nội thất phòng thờ</td>
-                            <td class="py-2 px-4 border text-center">12/12/2025</td>
-                            <td class="py-2 px-4 border text-center">21/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 50-54</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">11.4</td>
-                            <td class="py-2 px-4 border">Lắp đặt tủ bếp và nội thất phòng bếp</td>
-                            <td class="py-2 px-4 border text-center">12/12/2025</td>
-                            <td class="py-2 px-4 border text-center">21/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 56-61</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">11.5</td>
-                            <td class="py-2 px-4 border">Lắp đặt nội thất phòng ngủ</td>
-                            <td class="py-2 px-4 border text-center">22/12/2025</td>
-                            <td class="py-2 px-4 border text-center">01/01/2026</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 62-72</td>
-                        </tr>
-
-                        <!-- Giai đoạn hoàn thiện cảnh quan -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">12</td>
-                            <td class="py-2 px-4 border font-bold">HOÀN THIỆN CẢNH QUAN</td>
-                            <td class="py-2 px-4 border text-center">12/11/2025</td>
-                            <td class="py-2 px-4 border text-center">26/12/2025</td>
-                            <td class="py-2 px-4 border text-center">45</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">12.1</td>
-                            <td class="py-2 px-4 border">Thi công tiểu cảnh non bộ</td>
-                            <td class="py-2 px-4 border text-center">12/11/2025</td>
-                            <td class="py-2 px-4 border text-center">26/11/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 101</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">12.2</td>
-                            <td class="py-2 px-4 border">Thi công cầu vượt hồ koi</td>
-                            <td class="py-2 px-4 border text-center">27/11/2025</td>
-                            <td class="py-2 px-4 border text-center">06/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 102</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">12.3</td>
-                            <td class="py-2 px-4 border">Trồng thảm cỏ nhung Nhật</td>
-                            <td class="py-2 px-4 border text-center">07/12/2025</td>
-                            <td class="py-2 px-4 border text-center">16/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 106-115</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">12.4</td>
-                            <td class="py-2 px-4 border">Lắp đặt hệ thống đèn sân vườn</td>
-                            <td class="py-2 px-4 border text-center">07/12/2025</td>
-                            <td class="py-2 px-4 border text-center">21/12/2025</td>
-                            <td class="py-2 px-4 border text-center">15</td>
-                            <td class="py-2 px-4 border">Hạng mục 118-121</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">12.5</td>
-                            <td class="py-2 px-4 border">Hoàn thiện trồng cây tiểu cảnh</td>
-                            <td class="py-2 px-4 border text-center">17/12/2025</td>
-                            <td class="py-2 px-4 border text-center">26/12/2025</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Ngoài hợp đồng</td>
-                        </tr>
-
-                        <!-- Giai đoạn hoàn thiện và bàn giao -->
-                        <tr class="phase-row">
-                            <td class="py-2 px-4 border">13</td>
-                            <td class="py-2 px-4 border font-bold">HOÀN THIỆN VÀ BÀN GIAO</td>
-                            <td class="py-2 px-4 border text-center">02/01/2026</td>
-                            <td class="py-2 px-4 border text-center">21/01/2026</td>
-                            <td class="py-2 px-4 border text-center">20</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 6: 3%</td>
-                        </tr>
-                        <tr class="subphase-row">
-                            <td class="py-2 px-4 border">13.1</td>
-                            <td class="py-2 px-4 border">Hoàn thiện nhà chòi vọng cảnh</td>
-                            <td class="py-2 px-4 border text-center">02/01/2026</td>
-                            <td class="py-2 px-4 border text-center">06/01/2026</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border">Hạng mục 98-99</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">13.2</td>
-                            <td class="py-2 px-4 border">Vệ sinh công nghiệp toàn công trình</td>
-                            <td class="py-2 px-4 border text-center">07/01/2026</td>
-                            <td class="py-2 px-4 border text-center">16/01/2026</td>
-                            <td class="py-2 px-4 border text-center">10</td>
-                            <td class="py-2 px-4 border">Hạng mục 130</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">13.3</td>
-                            <td class="py-2 px-4 border">Nghiệm thu và bàn giao</td>
-                            <td class="py-2 px-4 border text-center">17/01/2026</td>
-                            <td class="py-2 px-4 border text-center">21/01/2026</td>
-                            <td class="py-2 px-4 border text-center">5</td>
-                            <td class="py-2 px-4 border"></td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 px-4 border">13.4</td>
-                            <td class="py-2 px-4 border">Bảo hành</td>
-                            <td class="py-2 px-4 border text-center">22/01/2026</td>
-                            <td class="py-2 px-4 border text-center">22/01/2027</td>
-                            <td class="py-2 px-4 border text-center">365</td>
-                            <td class="py-2 px-4 border">Đợt thanh toán 7: 3%</td>
-                        </tr>
+                    <tbody id="taskTableBody">
+                        <!-- Tasks will be added here by JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Chú thích -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">GHI CHÚ</h3>
-            <ol class="list-decimal pl-5 space-y-2">
-                <li>Lịch trình có thể thay đổi tùy thuộc vào điều kiện thời tiết và tình hình thực tế tại công trường.</li>
-                <li>Một số hạng mục có thể được thi công song song để đảm bảo tiến độ tổng thể.</li>
-                <li>Các mốc thanh toán được thực hiện theo tiến độ thi công đã thỏa thuận.</li>
-                <li>Các hạng mục ngoài hợp đồng sẽ được thống nhất về tiến độ và chi phí riêng.</li>
-                <li>Thời gian bảo hành công trình là 12 tháng kể từ ngày nghiệm thu bàn giao.</li>
-                <li>Tổng thời gian thi công là 250 ngày (không bao gồm thời gian bảo hành).</li>
-            </ol>
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4 bg-gray-100 p-2">Các đợt thanh toán</h2>
+            <div class="overflow-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Đợt</th>
+                            <th>Giai đoạn</th>
+                            <th>Giá trị (%)</th>
+                            <th>Giá trị (VNĐ)</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTableBody">
+                        <!-- Payments will be added here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Footer -->
-        <div class="bg-white rounded-lg shadow-lg p-6 text-center mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="font-bold text-lg mb-3">ĐẠI DIỆN CHỦ ĐẦU TƯ</h3>
-                    <p>(Ký tên, đóng dấu)</p>
-                    <div class="h-24"></div>
-                    <p class="font-bold">ANH HƯNG</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-lg mb-3">ĐẠI DIỆN NHÀ THẦU</h3>
-                    <p>(Ký tên, đóng dấu)</p>
-                    <div class="h-24"></div>
-                    <p class="font-bold">PHAN CHÍNH TRỰC</p>
-                    <p>Giám đốc</p>
-                </div>
-            </div>
+        <div class="text-right text-sm text-gray-600 mt-10">
+            Báo cáo được tạo ngày: <span id="reportDate"></span>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const tasks = [
-                {
-                    name: 'GIAI ĐOẠN CHUẨN BỊ',
-                    start: '2025-04-15',
-                    end: '2025-05-04',
-                    fillColor: '#008FFB',
-                    type: 'Chuẩn bị'
-                },
-                {
-                    name: 'Trắc đạc, định vị công trình',
-                    start: '2025-04-15',
-                    end: '2025-04-19',
-                    parent: 'GIAI ĐOẠN CHUẨN BỊ',
-                    fillColor: '#008FFB',
-                    type: 'Chuẩn bị'
-                },
-                {
-                    name: 'Tổ chức công trường, làm lán trại',
-                    start: '2025-04-15',
-                    end: '2025-04-22',
-                    parent: 'GIAI ĐOẠN CHUẨN BỊ',
-                    fillColor: '#008FFB',
-                    type: 'Chuẩn bị'
-                },
-                {
-                    name: 'Phá dỡ công trình hiện trạng',
-                    start: '2025-04-20',
-                    end: '2025-04-29',
-                    parent: 'GIAI ĐOẠN CHUẨN BỊ',
-                    fillColor: '#008FFB',
-                    type: 'Chuẩn bị'
-                },
-                {
-                    name: 'Xây tường rào bảo vệ công trình',
-                    start: '2025-04-25',
-                    end: '2025-05-04',
-                    parent: 'GIAI ĐOẠN CHUẨN BỊ',
-                    fillColor: '#008FFB',
-                    type: 'Chuẩn bị'
-                },
-                
-                {
-                    name: 'THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG',
-                    start: '2025-05-05',
-                    end: '2025-06-13',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Đào đắp đất tổng thể',
-                    start: '2025-05-05',
-                    end: '2025-05-19',
-                    parent: 'THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Ép cọc BTCT 250x250',
-                    start: '2025-05-20',
-                    end: '2025-06-03',
-                    parent: 'THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Khoan giếng ngầm',
-                    start: '2025-06-04',
-                    end: '2025-06-08',
-                    parent: 'THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Đào hố thấm tự nhiên',
-                    start: '2025-06-09',
-                    end: '2025-06-13',
-                    parent: 'THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                
-                {
-                    name: 'THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ',
-                    start: '2025-06-14',
-                    end: '2025-08-03',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Thi công phần móng nhà từ đường',
-                    start: '2025-06-14',
-                    end: '2025-07-13',
-                    parent: 'THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Thi công nâng cao khối đế lên 0.8m',
-                    start: '2025-07-14',
-                    end: '2025-08-03',
-                    parent: 'THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                
-                {
-                    name: 'THI CÔNG MÓNG CÔNG TRÌNH PHỤ',
-                    start: '2025-06-14',
-                    end: '2025-07-13',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Móng cổng tam quan',
-                    start: '2025-06-14',
-                    end: '2025-06-23',
-                    parent: 'THI CÔNG MÓNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Móng chòi vọng cảnh',
-                    start: '2025-06-24',
-                    end: '2025-07-03',
-                    parent: 'THI CÔNG MÓNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                {
-                    name: 'Đào hồ Koi và xử lý nền',
-                    start: '2025-07-04',
-                    end: '2025-07-13',
-                    parent: 'THI CÔNG MÓNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#00E396',
-                    type: 'Móng'
-                },
-                
-                {
-                    name: 'THI CÔNG TƯỜNG RÀO & NÂNG NỀN',
-                    start: '2025-08-04',
-                    end: '2025-09-02',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Xây tường bó để nâng nền toàn khối',
-                    start: '2025-08-04',
-                    end: '2025-08-13',
-                    parent: 'THI CÔNG TƯỜNG RÀO & NÂNG NỀN',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Thi công tường rào thường',
-                    start: '2025-08-14',
-                    end: '2025-08-28',
-                    parent: 'THI CÔNG TƯỜNG RÀO & NÂNG NỀN',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Thi công tường rào có hoa văn phù điêu',
-                    start: '2025-08-29',
-                    end: '2025-09-02',
-                    parent: 'THI CÔNG TƯỜNG RÀO & NÂNG NỀN',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                
-                {
-                    name: 'THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    start: '2025-08-04',
-                    end: '2025-10-12',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Thi công tầng trệt nhà chính',
-                    start: '2025-08-04',
-                    end: '2025-09-02',
-                    parent: 'THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Thi công mái công trình',
-                    start: '2025-09-03',
-                    end: '2025-10-02',
-                    parent: 'THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Thi công phù điêu đỉnh, diềm mái',
-                    start: '2025-09-28',
-                    end: '2025-10-12',
-                    parent: 'THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Lắp đặt cuốn thư đá',
-                    start: '2025-10-03',
-                    end: '2025-10-12',
-                    parent: 'THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                
-                {
-                    name: 'THI CÔNG CỔNG TAM QUAN',
-                    start: '2025-09-03',
-                    end: '2025-10-12',
-                    fillColor: '#FF4560',
-                    type: 'Cổng'
-                },
-                {
-                    name: 'Thi công phần thân cổng',
-                    start: '2025-09-03',
-                    end: '2025-09-17',
-                    parent: 'THI CÔNG CỔNG TAM QUAN',
-                    fillColor: '#FF4560',
-                    type: 'Cổng'
-                },
-                {
-                    name: 'Thi công phần mái cổng',
-                    start: '2025-09-18',
-                    end: '2025-10-02',
-                    parent: 'THI CÔNG CỔNG TAM QUAN',
-                    fillColor: '#FF4560',
-                    type: 'Cổng'
-                },
-                {
-                    name: 'Lắp đặt bộ cửa cổng chính và phụ',
-                    start: '2025-10-03',
-                    end: '2025-10-12',
-                    parent: 'THI CÔNG CỔNG TAM QUAN',
-                    fillColor: '#FF4560',
-                    type: 'Cổng'
-                },
-                
-                {
-                    name: 'THI CÔNG CÔNG TRÌNH PHỤ',
-                    start: '2025-09-03',
-                    end: '2025-11-01',
-                    fillColor: '#775DD0',
-                    type: 'Phụ'
-                },
-                {
-                    name: 'Thi công thân và mái nhà chòi vọng cảnh',
-                    start: '2025-09-03',
-                    end: '2025-10-02',
-                    parent: 'THI CÔNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#775DD0',
-                    type: 'Phụ'
-                },
-                {
-                    name: 'Thi công hồ Koi',
-                    start: '2025-09-03',
-                    end: '2025-10-12',
-                    parent: 'THI CÔNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#775DD0',
-                    type: 'Phụ'
-                },
-                {
-                    name: 'Thi công khu nghĩa trang',
-                    start: '2025-09-13',
-                    end: '2025-10-12',
-                    parent: 'THI CÔNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#775DD0',
-                    type: 'Phụ'
-                },
-                {
-                    name: 'Xây nhà kho và bồn nước',
-                    start: '2025-10-13',
-                    end: '2025-11-01',
-                    parent: 'THI CÔNG CÔNG TRÌNH PHỤ',
-                    fillColor: '#775DD0',
-                    type: 'Phụ'
-                },
-                
-                {
-                    name: 'THI CÔNG HẠ TẦNG TỔNG THỂ',
-                    start: '2025-10-13',
-                    end: '2025-11-11',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Thi công bê tông nền cảnh quan và đường dạo',
-                    start: '2025-10-13',
-                    end: '2025-10-27',
-                    parent: 'THI CÔNG HẠ TẦNG TỔNG THỂ',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Xây bó vỉa và hoàn thiện nền đá',
-                    start: '2025-10-28',
-                    end: '2025-11-06',
-                    parent: 'THI CÔNG HẠ TẦNG TỔNG THỂ',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Lắp đặt hệ thống thoát nước và tưới tự động',
-                    start: '2025-10-28',
-                    end: '2025-11-11',
-                    parent: 'THI CÔNG HẠ TẦNG TỔNG THỂ',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                
-                {
-                    name: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    start: '2025-10-13',
-                    end: '2025-12-11',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Thi công ốp lát gạch',
-                    start: '2025-10-13',
-                    end: '2025-11-01',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Thi công ốp đá và lan can',
-                    start: '2025-10-13',
-                    end: '2025-11-11',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt hệ thống điện và nước âm tường',
-                    start: '2025-10-13',
-                    end: '2025-11-01',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt cửa gỗ',
-                    start: '2025-11-02',
-                    end: '2025-11-16',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Sơn nước trong và ngoài nhà',
-                    start: '2025-11-02',
-                    end: '2025-11-21',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt thiết bị vệ sinh',
-                    start: '2025-11-17',
-                    end: '2025-11-26',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt thiết bị điện và chiếu sáng',
-                    start: '2025-11-17',
-                    end: '2025-12-01',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Xử lý phòng chống mối',
-                    start: '2025-11-27',
-                    end: '2025-12-01',
-                    parent: 'HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                
-                {
-                    name: 'THI CÔNG NỘI THẤT',
-                    start: '2025-12-02',
-                    end: '2026-01-01',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Thi công trần trang trí hoa văn',
-                    start: '2025-12-02',
-                    end: '2025-12-11',
-                    parent: 'THI CÔNG NỘI THẤT',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt vách ốp tường sau bàn thờ',
-                    start: '2025-12-02',
-                    end: '2025-12-11',
-                    parent: 'THI CÔNG NỘI THẤT',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt bàn thờ và nội thất phòng thờ',
-                    start: '2025-12-12',
-                    end: '2025-12-21',
-                    parent: 'THI CÔNG NỘI THẤT',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt tủ bếp và nội thất phòng bếp',
-                    start: '2025-12-12',
-                    end: '2025-12-21',
-                    parent: 'THI CÔNG NỘI THẤT',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                {
-                    name: 'Lắp đặt nội thất phòng ngủ',
-                    start: '2025-12-22',
-                    end: '2026-01-01',
-                    parent: 'THI CÔNG NỘI THẤT',
-                    fillColor: '#FF66C4',
-                    type: 'Hoàn thiện'
-                },
-                
-                {
-                    name: 'HOÀN THIỆN CẢNH QUAN',
-                    start: '2025-11-12',
-                    end: '2025-12-26',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Thi công tiểu cảnh non bộ',
-                    start: '2025-11-12',
-                    end: '2025-11-26',
-                    parent: 'HOÀN THIỆN CẢNH QUAN',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Thi công cầu vượt hồ koi',
-                    start: '2025-11-27',
-                    end: '2025-12-06',
-                    parent: 'HOÀN THIỆN CẢNH QUAN',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Trồng thảm cỏ nhung Nhật',
-                    start: '2025-12-07',
-                    end: '2025-12-16',
-                    parent: 'HOÀN THIỆN CẢNH QUAN',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Lắp đặt hệ thống đèn sân vườn',
-                    start: '2025-12-07',
-                    end: '2025-12-21',
-                    parent: 'HOÀN THIỆN CẢNH QUAN',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                {
-                    name: 'Hoàn thiện trồng cây tiểu cảnh',
-                    start: '2025-12-17',
-                    end: '2025-12-26',
-                    parent: 'HOÀN THIỆN CẢNH QUAN',
-                    fillColor: '#00D9E9',
-                    type: 'Hạ tầng'
-                },
-                
-                {
-                    name: 'HOÀN THIỆN VÀ BÀN GIAO',
-                    start: '2026-01-02',
-                    end: '2026-01-21',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Hoàn thiện nhà chòi vọng cảnh',
-                    start: '2026-01-02',
-                    end: '2026-01-06',
-                    parent: 'HOÀN THIỆN VÀ BÀN GIAO',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Vệ sinh công nghiệp toàn công trình',
-                    start: '2026-01-07',
-                    end: '2026-01-16',
-                    parent: 'HOÀN THIỆN VÀ BÀN GIAO',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                },
-                {
-                    name: 'Nghiệm thu và bàn giao',
-                    start: '2026-01-17',
-                    end: '2026-01-21',
-                    parent: 'HOÀN THIỆN VÀ BÀN GIAO',
-                    fillColor: '#FEB019',
-                    type: 'Nhà chính'
-                }
-            ];
+        // Initialize date picker
+        flatpickr("#startDate", {
+            dateFormat: "d/m/Y",
+            locale: "vn",
+            defaultDate: "05/05/2025"
+        });
 
-            const options = {
-                chart: {
-                    height: 800,
-                    type: 'rangeBar',
-                    fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-                    toolbar: {
-                        show: true,
-                        tools: {
-                            download: true,
-                            selection: true,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                        }
+        // Project tasks with initial durations
+        const initialTasks = [
+            { id: 1, name: "GIAI ĐOẠN CHUẨN BỊ", days: 20, category: "preparation", note: "Đợt thanh toán 1: 50%" },
+            { id: 1.1, name: "Trắc đạc, định vị công trình", days: 5, category: "preparation", parent: 1, note: "Hạng mục 109" },
+            { id: 1.2, name: "Tổ chức công trường, làm lán trại", days: 8, category: "preparation", parent: 1, note: "Điều 3.1" },
+            { id: 1.3, name: "Phá dỡ công trình hiện trạng", days: 10, category: "preparation", parent: 1, note: "Hạng mục 131" },
+            { id: 1.4, name: "Xây tường rào bảo vệ công trình", days: 10, category: "preparation", parent: 1, note: "Điều 3.3" },
+
+            { id: 2, name: "THI CÔNG GIA CỐ NỀN ĐẤT YẾU & MÓNG", days: 40, category: "foundation", note: "" },
+            { id: 2.1, name: "Đào đắp đất tổng thể", days: 15, category: "foundation", parent: 2, note: "Hạng mục 110" },
+            { id: 2.2, name: "Ép cọc BTCT 250x250", days: 15, category: "foundation", parent: 2, note: "Hạng mục A" },
+            { id: 2.3, name: "Khoan giếng ngầm", days: 5, category: "foundation", parent: 2, note: "Hạng mục 125" },
+            { id: 2.4, name: "Đào hố thấm tự nhiên", days: 5, category: "foundation", parent: 2, note: "Hạng mục 127" },
+
+            { id: 3, name: "THI CÔNG PHẦN MÓNG NHÀ TỪ ĐƯỜNG & NÂNG ĐẾ", days: 50, category: "foundation", note: "" },
+            { id: 3.1, name: "Thi công phần móng nhà từ đường", days: 30, category: "foundation", parent: 3, note: "Hạng mục 13" },
+            { id: 3.2, name: "Thi công nâng cao khối đế lên 0.8m", days: 20, category: "foundation", parent: 3, note: "Hạng mục 14" },
+
+            { id: 4, name: "THI CÔNG MÓNG CÔNG TRÌNH PHỤ", days: 30, category: "foundation", note: "" },
+            { id: 4.1, name: "Móng cổng tam quan", days: 10, category: "foundation", parent: 4, note: "Hạng mục 4" },
+            { id: 4.2, name: "Móng chòi vọng cảnh", days: 10, category: "foundation", parent: 4, note: "Hạng mục 95" },
+            { id: 4.3, name: "Đào hồ Koi và xử lý nền", days: 10, category: "foundation", parent: 4, note: "Hạng mục 100" },
+
+            { id: 5, name: "THI CÔNG TƯỜNG RÀO & NÂNG NỀN", days: 30, category: "main_building", note: "" },
+            { id: 5.1, name: "Xây tường bó để nâng nền toàn khối", days: 10, category: "main_building", parent: 5, note: "Hạng mục 1" },
+            { id: 5.2, name: "Thi công tường rào thường", days: 15, category: "main_building", parent: 5, note: "Hạng mục 2" },
+            { id: 5.3, name: "Thi công tường rào có hoa văn phù điêu", days: 5, category: "main_building", parent: 5, note: "Hạng mục 3" },
+
+            { id: 6, name: "THI CÔNG NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)", days: 70, category: "main_building", note: "Đợt thanh toán 2: 25%" },
+            { id: 6.1, name: "Thi công tầng trệt nhà chính", days: 30, category: "main_building", parent: 6, note: "Hạng mục 15" },
+            { id: 6.2, name: "Thi công mái công trình", days: 30, category: "main_building", parent: 6, note: "Hạng mục 16" },
+            { id: 6.3, name: "Thi công phù điêu đỉnh, diềm mái", days: 15, category: "main_building", parent: 6, note: "Hạng mục 17" },
+            { id: 6.4, name: "Lắp đặt cuốn thư đá", days: 10, category: "main_building", parent: 6, note: "Hạng mục 18" },
+
+            { id: 7, name: "THI CÔNG CỔNG TAM QUAN", days: 40, category: "main_building", note: "" },
+            { id: 7.1, name: "Thi công phần thân cổng", days: 15, category: "main_building", parent: 7, note: "Hạng mục 5" },
+            { id: 7.2, name: "Thi công phần mái cổng", days: 15, category: "main_building", parent: 7, note: "Hạng mục 6-7" },
+            { id: 7.3, name: "Lắp đặt bộ cửa cổng chính và phụ", days: 10, category: "main_building", parent: 7, note: "Hạng mục 8-9" },
+
+            { id: 8, name: "THI CÔNG CÔNG TRÌNH PHỤ", days: 60, category: "ancillary", note: "Đợt thanh toán 3: 10%" },
+            { id: 8.1, name: "Thi công thân và mái nhà chòi vọng cảnh", days: 30, category: "ancillary", parent: 8, note: "Hạng mục 96-97" },
+            { id: 8.2, name: "Thi công hồ Koi", days: 40, category: "ancillary", parent: 8, note: "Hạng mục 100" },
+            { id: 8.3, name: "Thi công khu nghĩa trang", days: 30, category: "ancillary", parent: 8, note: "Hạng mục 103-108" },
+            { id: 8.4, name: "Xây nhà kho và bồn nước", days: 20, category: "ancillary", parent: 8, note: "Hạng mục 123" },
+
+            { id: 9, name: "THI CÔNG HẠ TẦNG TỔNG THỂ", days: 30, category: "landscape", note: "" },
+            { id: 9.1, name: "Thi công bê tông nền cảnh quan và đường dạo", days: 15, category: "landscape", parent: 9, note: "Hạng mục 111" },
+            { id: 9.2, name: "Xây bó vỉa và hoàn thiện nền đá", days: 10, category: "landscape", parent: 9, note: "Hạng mục 112-113-117" },
+            { id: 9.3, name: "Lắp đặt hệ thống thoát nước và tưới tự động", days: 15, category: "landscape", parent: 9, note: "Hạng mục 116" },
+
+            { id: 10, name: "HOÀN THIỆN NHÀ TỪ ĐƯỜNG (NHÀ CHÍNH)", days: 60, category: "finishing", note: "Đợt thanh toán 4: 5%" },
+            { id: 10.1, name: "Thi công ốp lát gạch", days: 20, category: "finishing", parent: 10, note: "Hạng mục 20-24" },
+            { id: 10.2, name: "Thi công ốp đá và lan can", days: 30, category: "finishing", parent: 10, note: "Hạng mục 25-26" },
+            { id: 10.3, name: "Lắp đặt hệ thống điện và nước âm tường", days: 20, category: "finishing", parent: 10, note: "Hạng mục 19" },
+            { id: 10.4, name: "Lắp đặt cửa gỗ", days: 15, category: "finishing", parent: 10, note: "Hạng mục 31-39" },
+            { id: 10.5, name: "Sơn nước trong và ngoài nhà", days: 20, category: "finishing", parent: 10, note: "Hạng mục 28-29-30" },
+            { id: 10.6, name: "Lắp đặt thiết bị vệ sinh", days: 10, category: "finishing", parent: 10, note: "Hạng mục 40-44" },
+            { id: 10.7, name: "Lắp đặt thiết bị điện và chiếu sáng", days: 15, category: "finishing", parent: 10, note: "Hạng mục 74-93" },
+            { id: 10.8, name: "Xử lý phòng chống mối", days: 5, category: "finishing", parent: 10, note: "Hạng mục 129" },
+
+            { id: 11, name: "THI CÔNG NỘI THẤT", days: 30, category: "finishing", note: "Đợt thanh toán 5: 4%" },
+            { id: 11.1, name: "Thi công trần trang trí hoa văn", days: 10, category: "finishing", parent: 11, note: "Hạng mục 55" },
+            { id: 11.2, name: "Lắp đặt vách ốp tường sau bàn thờ", days: 10, category: "finishing", parent: 11, note: "Hạng mục 49" },
+            { id: 11.3, name: "Lắp đặt bàn thờ và nội thất phòng thờ", days: 10, category: "finishing", parent: 11, note: "Hạng mục 50-54" },
+            { id: 11.4, name: "Lắp đặt tủ bếp và nội thất phòng bếp", days: 10, category: "finishing", parent: 11, note: "Hạng mục 56-61" },
+            { id: 11.5, name: "Lắp đặt nội thất phòng ngủ", days: 10, category: "finishing", parent: 11, note: "Hạng mục 62-72" },
+
+            { id: 12, name: "HOÀN THIỆN CẢNH QUAN", days: 45, category: "landscape", note: "" },
+            { id: 12.1, name: "Thi công tiểu cảnh non bộ", days: 15, category: "landscape", parent: 12, note: "Hạng mục 101" },
+            { id: 12.2, name: "Thi công cầu vượt hồ koi", days: 10, category: "landscape", parent: 12, note: "Hạng mục 102" },
+            { id: 12.3, name: "Trồng thảm cỏ nhung Nhật", days: 10, category: "landscape", parent: 12, note: "Hạng mục 106-115" },
+            { id: 12.4, name: "Lắp đặt hệ thống đèn sân vườn", days: 15, category: "landscape", parent: 12, note: "Hạng mục 118-121" },
+            { id: 12.5, name: "Hoàn thiện trồng cây tiểu cảnh", days: 10, category: "landscape", parent: 12, note: "Ngoài hợp đồng" },
+
+            { id: 13, name: "HOÀN THIỆN VÀ BÀN GIAO", days: 20, category: "finishing", note: "Đợt thanh toán 6: 3%" },
+            { id: 13.1, name: "Hoàn thiện nhà chòi vọng cảnh", days: 5, category: "finishing", parent: 13, note: "Hạng mục 98-99" },
+            { id: 13.2, name: "Vệ sinh công nghiệp toàn công trình", days: 10, category: "finishing", parent: 13, note: "Hạng mục 130" },
+            { id: 13.3, name: "Nghiệm thu và bàn giao", days: 5, category: "finishing", parent: 13, note: "" },
+            { id: 13.4, name: "Bảo hành", days: 365, category: "finishing", parent: 13, note: "Đợt thanh toán 7: 3%" }
+        ];
+
+        // Payment milestones
+        const payments = [
+            { id: 1, phase: "Ký hợp đồng", percentage: 50, value: 6444400000, milestone: "start" },
+            { id: 2, phase: "Hoàn thành mái ngói (cất nóc)", percentage: 25, value: 3222200000, milestone: "roof" },
+            { id: 3, phase: "Xây tô đạt 80%", percentage: 10, value: 1288880000, milestone: "walls" },
+            { id: 4, phase: "Bả bột 2 lớp đạt 80%, hoàn thiện ốp lát", percentage: 5, value: 644440000, milestone: "finishing" },
+            { id: 5, phase: "Lắp đặt đồ gỗ nội thất", percentage: 4, value: 515552000, milestone: "furniture" },
+            { id: 6, phase: "Nghiệm thu + bàn giao", percentage: 3, value: 386664000, milestone: "handover" },
+            { id: 7, phase: "Bảo hành, sau 01 năm", percentage: 3, value: 386664000, milestone: "warranty" }
+        ];
+
+        let tasks = [...initialTasks];
+        let chart;
+        let currentStartDate = new Date(2025, 4, 5); // 05/05/2025
+        let currentTotalDays = 250;
+        let currentZoomLevel = 1;
+
+        // Helper functions
+        function formatDate(date) {
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth()+1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        }
+
+        function parseDate(dateStr) {
+            const parts = dateStr.split('/');
+            return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+        }
+
+        function getTaskColor(category) {
+            const colors = {
+                'preparation': '#3b82f6', // Blue
+                'foundation': '#10b981',  // Green
+                'main_building': '#f59e0b', // Yellow
+                'ancillary': '#8b5cf6',   // Purple
+                'landscape': '#06b6d4',   // Cyan
+                'finishing': '#ec4899'    // Pink
+            };
+            return colors[category] || '#6b7280'; // Default gray
+        }
+
+        function calculateTaskDates() {
+            // First, calculate the proportional durations
+            const originalTotalWorkDays = initialTasks.reduce((total, task) => {
+                if (task.parent === undefined && task.id !== 1 && task.id !== 13.4) { // Exclude preparation phase and warranty
+                    return total + task.days;
+                }
+                return total;
+            }, 0);
+
+            const ratio = currentTotalDays / originalTotalWorkDays;
+
+            // Reset tasks array with deep copy of initialTasks
+            tasks = initialTasks.map(task => ({...task}));
+
+            // Scale the durations based on the ratio (except for preparation phase and warranty)
+            tasks.forEach(task => {
+                if (task.id !== 1 && task.id !== 13.4 && task.parent !== 1) {
+                    task.days = Math.round(task.days * ratio);
+                    if (task.days < 1) task.days = 1; // Ensure at least 1 day
+                }
+            });
+
+            // Preparation phase starts 20 days before the construction
+            const prepStart = new Date(currentStartDate);
+            prepStart.setDate(prepStart.getDate() - 20);
+
+            // Calculate start and end dates for each task
+            let currentDate = new Date(prepStart);
+            
+            // Sort tasks by parent-child relationship
+            const sortedTasks = [];
+            
+            // First add preparation phase
+            const prepTasks = tasks.filter(t => t.id === 1 || t.parent === 1);
+            sortedTasks.push(...prepTasks);
+            
+            // Then add remaining main tasks in order
+            for (let i = 2; i <= 13; i++) {
+                const mainTask = tasks.find(t => t.id === i);
+                if (mainTask) sortedTasks.push(mainTask);
+                
+                // Add subtasks
+                const subTasks = tasks.filter(t => t.parent === i);
+                sortedTasks.push(...subTasks);
+            }
+            
+            // Calculate dates for preparation phase
+            let prepStartDate = new Date(prepStart);
+            for (const task of sortedTasks.filter(t => t.id === 1 || t.parent === 1)) {
+                task.startDate = new Date(prepStartDate);
+                task.endDate = new Date(prepStartDate);
+                task.endDate.setDate(task.endDate.getDate() + task.days - 1);
+                
+                if (task.parent === 1) {
+                    prepStartDate = new Date(task.endDate);
+                    prepStartDate.setDate(prepStartDate.getDate() + 1);
+                }
+            }
+            
+            // Set project start date
+            currentDate = new Date(currentStartDate);
+            
+            // Calculate dates for construction phase (synchronized with dependencies)
+            const mainTaskEndDates = {};
+            
+            // Process each main task group
+            for (let i = 2; i <= 13; i++) {
+                const mainTask = sortedTasks.find(t => t.id === i);
+                if (!mainTask) continue;
+                
+                // Set main task start date
+                if (i === 2) {
+                    // First construction task starts at project start date
+                    mainTask.startDate = new Date(currentDate);
+                } else {
+                    // Other tasks may depend on previous tasks
+                    if (i === 5 || i === 6) {
+                        // Tasks 5 and 6 depend on task 3
+                        mainTask.startDate = new Date(mainTaskEndDates[3] || currentDate);
+                    } else if (i === 7) {
+                        // Task 7 depends on task 5
+                        mainTask.startDate = new Date(mainTaskEndDates[5] || currentDate);
+                    } else if (i === 8) {
+                        // Task 8 depends on task 7 start
+                        const task7 = sortedTasks.find(t => t.id === 7);
+                        mainTask.startDate = new Date(task7 ? task7.startDate : currentDate);
+                    } else if (i === 9 || i === 10) {
+                        // Tasks 9 and 10 depend on task 6
+                        mainTask.startDate = new Date(mainTaskEndDates[6] || currentDate);
+                    } else if (i === 11) {
+                        // Task 11 depends on task 10
+                        mainTask.startDate = new Date(mainTaskEndDates[10] || currentDate);
+                    } else if (i === 12) {
+                        // Task 12 depends on task 9
+                        mainTask.startDate = new Date(mainTaskEndDates[9] || currentDate);
+                    } else if (i === 13) {
+                        // Task 13 depends on tasks 11 and 12
+                        const endDate11 = mainTaskEndDates[11] || currentDate;
+                        const endDate12 = mainTaskEndDates[12] || currentDate;
+                        mainTask.startDate = new Date(Math.max(endDate11.getTime(), endDate12.getTime()));
+                    } else {
+                        // Default dependency on previous task
+                        mainTask.startDate = new Date(mainTaskEndDates[i-1] || currentDate);
                     }
+                }
+                
+                // Calculate main task end date
+                mainTask.endDate = new Date(mainTask.startDate);
+                mainTask.endDate.setDate(mainTask.endDate.getDate() + mainTask.days - 1);
+                
+                // Store end date for dependencies
+                mainTaskEndDates[i] = new Date(mainTask.endDate);
+                
+                // Process subtasks
+                let subtaskStartDate = new Date(mainTask.startDate);
+                const subtasks = sortedTasks.filter(t => t.parent === i);
+                
+                for (const subtask of subtasks) {
+                    subtask.startDate = new Date(subtaskStartDate);
+                    subtask.endDate = new Date(subtaskStartDate);
+                    subtask.endDate.setDate(subtask.endDate.getDate() + subtask.days - 1);
+                    
+                    // Some subtasks run in parallel, others in sequence
+                    if (
+                        (i === 4 && subtask.id !== 4.3) || // All subtasks of task 4 run in parallel except 4.3
+                        (i === 10 && ![10.4, 10.6, 10.7, 10.8].includes(subtask.id)) || // Some subtasks of task 10 run in parallel
+                        (i === 11 && subtask.id !== 11.5) // All subtasks of task 11 run in parallel except 11.5
+                    ) {
+                        // This subtask runs in parallel, don't update start date
+                    } else {
+                        // This subtask runs in sequence, update start date for next subtask
+                        subtaskStartDate = new Date(subtask.endDate);
+                        subtaskStartDate.setDate(subtaskStartDate.getDate() + 1);
+                    }
+                }
+                
+                // Special case for warranty period
+                if (i === 13) {
+                    const warrantyTask = tasks.find(t => t.id === 13.4);
+                    if (warrantyTask) {
+                        warrantyTask.startDate = new Date(mainTask.endDate);
+                        warrantyTask.endDate = new Date(warrantyTask.startDate);
+                        warrantyTask.endDate.setDate(warrantyTask.endDate.getDate() + 365); // 1 year
+                    }
+                }
+            }
+            
+            // Calculate payment milestones
+            calculatePaymentMilestones();
+        }
+
+        function calculatePaymentMilestones() {
+            // Payment 1: Project start
+            payments[0].date = new Date(currentStartDate);
+            
+            // Payment 2: Roof completion (end of task 6.2)
+            const roofTask = tasks.find(t => t.id === 6.2);
+            payments[1].date = roofTask ? new Date(roofTask.endDate) : null;
+            
+            // Payment 3: 80% wall completion (during task 8)
+            const wallsTask = tasks.find(t => t.id === 8);
+            if (wallsTask) {
+                const daysFromStart = Math.floor(wallsTask.days * 0.8);
+                payments[2].date = new Date(wallsTask.startDate);
+                payments[2].date.setDate(payments[2].date.getDate() + daysFromStart);
+            } else {
+                payments[2].date = null;
+            }
+            
+            // Payment 4: 80% finishing (during task 10)
+            const finishingTask = tasks.find(t => t.id === 10);
+            if (finishingTask) {
+                const daysFromStart = Math.floor(finishingTask.days * 0.8);
+                payments[3].date = new Date(finishingTask.startDate);
+                payments[3].date.setDate(payments[3].date.getDate() + daysFromStart);
+            } else {
+                payments[3].date = null;
+            }
+            
+            // Payment 5: Furniture installation (start of task 11)
+            const furnitureTask = tasks.find(t => t.id === 11);
+            payments[4].date = furnitureTask ? new Date(furnitureTask.startDate) : null;
+            
+            // Payment 6: Handover (end of task 13.3)
+            const handoverTask = tasks.find(t => t.id === 13.3);
+            payments[5].date = handoverTask ? new Date(handoverTask.endDate) : null;
+            
+            // Payment 7: Warranty (end of warranty period)
+            const warrantyTask = tasks.find(t => t.id === 13.4);
+            payments[6].date = warrantyTask ? new Date(warrantyTask.endDate) : null;
+        }
+
+        function updateChart() {
+            calculateTaskDates();
+            
+            // Prepare series data for chart
+            const seriesData = [];
+            
+            // Add tasks
+            tasks.forEach(task => {
+                const color = getTaskColor(task.category);
+                const isMainTask = task.parent === undefined;
+                
+                seriesData.push({
+                    x: task.name,
+                    y: [
+                        task.startDate.getTime(),
+                        task.endDate.getTime()
+                    ],
+                    fillColor: color,
+                    borderColor: color,
+                    z: isMainTask ? 'Chính' : 'Phụ',
+                    parent: task.parent
+                });
+            });
+            
+            // Add payment milestones
+            payments.forEach(payment => {
+                if (payment.date) {
+                    seriesData.push({
+                        x: `Đợt ${payment.id}: ${payment.phase} (${payment.percentage}%)`,
+                        y: [
+                            payment.date.getTime(),
+                            payment.date.getTime() + 86400000 // 1 day in milliseconds
+                        ],
+                        fillColor: '#ef4444', // Red
+                        borderColor: '#ef4444',
+                        z: 'Thanh toán'
+                    });
+                }
+            });
+
+            // Sort series data by start date
+            seriesData.sort((a, b) => a.y[0] - b.y[0]);
+            
+            // Get min and max dates for chart
+            const minDate = tasks.reduce((min, task) => 
+                task.startDate < min ? task.startDate : min, 
+                tasks[0].startDate
+            );
+            
+            const maxDate = tasks.reduce((max, task) => 
+                task.endDate > max ? task.endDate : max, 
+                tasks[0].endDate
+            );
+            
+            // Chart options
+            const options = {
+                series: [{
+                    data: seriesData
+                }],
+                chart: {
+                    height: 850,
+                    type: 'rangeBar',
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {
+                        enabled: true
+                    },
+                    background: '#ffffff'
                 },
                 plotOptions: {
                     bar: {
                         horizontal: true,
-                        barHeight: '80%',
+                        distributed: true,
+                        dataLabels: {
+                            hideOverflowingLabels: false
+                        },
+                        rangeBarOverlap: true,
                         rangeBarGroupRows: true
                     }
                 },
-                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#00D9E9', '#FF66C4'],
-                fill: {
-                    type: 'solid'
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val, opts) {
+                        const task = tasks.find(t => t.name === opts.w.globals.labels[opts.dataPointIndex]);
+                        return task ? `${task.days} ngày` : '';
+                    },
+                    style: {
+                        colors: ['#fff'],
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    custom: function({series, seriesIndex, dataPointIndex, w}) {
+                        const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+                        
+                        // Find the corresponding task or payment
+                        const taskName = data.x;
+                        const isPayment = taskName.includes('Đợt');
+                        
+                        let startDate, endDate, duration;
+                        
+                        if (isPayment) {
+                            const paymentId = parseInt(taskName.split(':')[0].replace('Đợt ', ''));
+                            const payment = payments.find(p => p.id === paymentId);
+                            startDate = payment.date ? formatDate(payment.date) : 'N/A';
+                            endDate = startDate;
+                            duration = 'Thanh toán';
+                        } else {
+                            const task = tasks.find(t => t.name === taskName);
+                            startDate = formatDate(task.startDate);
+                            endDate = formatDate(task.endDate);
+                            duration = `${task.days} ngày`;
+                        }
+                        
+                        return `
+                            <div class="p-2 bg-white border rounded shadow-lg">
+                                <div class="font-bold mb-1">${taskName}</div>
+                                <div>
+                                    <span class="font-semibold">Bắt đầu:</span> ${startDate}<br>
+                                    <span class="font-semibold">Kết thúc:</span> ${endDate}<br>
+                                    <span class="font-semibold">Thời gian:</span> ${duration}
+                                </div>
+                            </div>
+                        `;
+                    }
                 },
                 xaxis: {
                     type: 'datetime',
-                    labels: {
-                        datetimeFormatter: {
-                            year: 'yyyy',
-                            month: "MMM 'yy",
-                            day: 'dd MMM',
-                        }
-                    }
+                    min: minDate.getTime(),
+                    max: maxDate.getTime()
                 },
                 yaxis: {
                     labels: {
                         formatter: function(val) {
                             return val;
+                        },
+                        style: {
+                            fontSize: '12px'
                         }
                     }
                 },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'left'
-                },
-                tooltip: {
-                    custom: function({ seriesIndex, dataPointIndex, w }) {
-                        const task = tasks[dataPointIndex];
-                        const startDate = new Date(task.start);
-                        const endDate = new Date(task.end);
-                        const formattedStart = `${startDate.getDate()}/${startDate.getMonth() + 1}/${startDate.getFullYear()}`;
-                        const formattedEnd = `${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}`;
-                        
-                        const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                        
-                        return `
-                            <div class="p-2 bg-white rounded shadow-md border border-gray-300">
-                                <div class="font-bold mb-1">${task.name}</div>
-                                <div>Bắt đầu: ${formattedStart}</div>
-                                <div>Kết thúc: ${formattedEnd}</div>
-                                <div>Thời gian: ${days} ngày</div>
-                                <div class="mt-1 pt-1 border-t border-gray-300">Loại: ${task.type}</div>
-                            </div>
-                        `;
+                grid: {
+                    row: {
+                        colors: ['#f3f4f6', 'transparent'],
+                        opacity: 0.5
                     }
+                },
+                legend: {
+                    show: false
                 }
             };
 
-            const series = [{
-                data: tasks.map(task => ({
-                    x: task.name,
-                    y: [
-                        new Date(task.start).getTime(),
-                        new Date(task.end).getTime()
-                    ],
-                    fillColor: task.fillColor,
-                    parent: task.parent
-                }))
-            }];
-
-            const chart = new ApexCharts(document.querySelector('#gantt-chart'), {
-                ...options,
-                series
-            });
+            // Destroy existing chart if it exists
+            if (chart) {
+                chart.destroy();
+            }
             
+            // Create new chart
+            chart = new ApexCharts(document.getElementById('chart'), options);
             chart.render();
+            
+            // Update task table
+            updateTaskTable();
+            
+            // Update payment table
+            updatePaymentTable();
+        }
+
+        function updateTaskTable() {
+            const tableBody = document.getElementById('taskTableBody');
+            tableBody.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                
+                // Format task ID for display
+                let displayId = task.id;
+                if (Number.isInteger(task.id) && task.parent === undefined) {
+                    displayId = task.id;
+                } else if (task.parent !== undefined) {
+                    displayId = task.id.toString(); // Format with decimals for subtasks
+                }
+                
+                // Apply indentation for subtasks
+                const taskNameClass = task.parent ? 'pl-4' : 'font-bold';
+                
+                row.innerHTML = `
+                    <td>${displayId}</td>
+                    <td class="${taskNameClass}">${task.name}</td>
+                    <td>${formatDate(task.startDate)}</td>
+                    <td>${formatDate(task.endDate)}</td>
+                    <td>${task.days}</td>
+                    <td>${task.note || ''}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updatePaymentTable() {
+            const tableBody = document.getElementById('paymentTableBody');
+            tableBody.innerHTML = '';
+            
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                
+                const formattedValue = payment.value.toLocaleString('vi-VN') + ' VNĐ';
+                const formattedDate = payment.date ? formatDate(payment.date) : 'Theo tiến độ';
+                
+                row.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.phase}</td>
+                    <td>${payment.percentage}%</td>
+                    <td>${formattedValue}</td>
+                    <td>${formattedDate}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Event handlers
+        document.getElementById('updateBtn').addEventListener('click', function() {
+            const startDateValue = document.getElementById('startDate').value;
+            const totalDaysValue = parseInt(document.getElementById('totalDays').value);
+            
+            if (isNaN(totalDaysValue) || totalDaysValue < 50 || totalDaysValue > 500) {
+                alert('Tổng thời gian thi công phải từ 50 đến 500 ngày.');
+                return;
+            }
+            
+            currentStartDate = parseDate(startDateValue);
+            currentTotalDays = totalDaysValue;
+            
+            updateChart();
+        });
+
+        document.getElementById('decreaseDays').addEventListener('click', function() {
+            const totalDaysInput = document.getElementById('totalDays');
+            let value = parseInt(totalDaysInput.value);
+            if (value > 50) {
+                totalDaysInput.value = value - 10;
+            }
+        });
+
+        document.getElementById('increaseDays').addEventListener('click', function() {
+            const totalDaysInput = document.getElementById('totalDays');
+            let value = parseInt(totalDaysInput.value);
+            if (value < 500) {
+                totalDaysInput.value = value + 10;
+            }
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            currentZoomLevel *= 1.2;
+            chart.zoomX(
+                chart.w.globals.minX * 0.9,
+                chart.w.globals.maxX * 1.1
+            );
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            currentZoomLevel /= 1.2;
+            chart.zoomX(
+                chart.w.globals.minX * 0.6,
+                chart.w.globals.maxX * 1.4
+            );
+        });
+
+        document.getElementById('zoomReset').addEventListener('click', function() {
+            currentZoomLevel = 1;
+            chart.resetSeries();
+        });
+
+        // Set the report date
+        document.getElementById('reportDate').textContent = formatDate(new Date());
+
+        // Initialize the chart
+        document.addEventListener('DOMContentLoaded', function() {
+            updateChart();
         });
     </script>
 </body>
